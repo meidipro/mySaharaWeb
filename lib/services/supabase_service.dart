@@ -54,10 +54,18 @@ class SupabaseService {
   // Google Sign-In using Supabase OAuth
   static Future<bool> signInWithGoogle() async {
     try {
-      // Don't specify redirectTo - Supabase will use current URL automatically
-      // This works for both localhost development and production
+      // For web, use the current origin as redirect URL
+      String redirectUrl;
+      if (kIsWeb) {
+        // Get the current page URL for web
+        redirectUrl = Uri.base.origin;
+      } else {
+        redirectUrl = 'http://localhost:3000'; // Fallback for mobile dev
+      }
+
       await client.auth.signInWithOAuth(
         OAuthProvider.google,
+        redirectTo: redirectUrl,
       );
       return true;
     } catch (e) {
