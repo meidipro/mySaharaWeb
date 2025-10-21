@@ -80,17 +80,26 @@ class AuthService {
   // Get user profile
   Future<UserModel?> getUserProfile(String userId) async {
     try {
-      final response = await SupabaseService.client
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
+      // Add retry logic for cases where trigger hasn't completed yet
+      for (int i = 0; i < 3; i++) {
+        final response = await SupabaseService.client
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .maybeSingle();
 
-      if (response == null) {
-        return null;
+        if (response != null) {
+          return UserModel.fromJson(response);
+        }
+
+        // Wait before retrying
+        if (i < 2) {
+          await Future.delayed(Duration(milliseconds: 500 * (i + 1)));
+        }
       }
 
-      return UserModel.fromJson(response);
+      print('User profile not found after retries for userId: $userId');
+      return null;
     } catch (e) {
       print('Error getting user profile: $e');
       return null;

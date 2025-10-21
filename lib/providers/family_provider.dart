@@ -27,6 +27,17 @@ class FamilyProvider with ChangeNotifier {
 
   String? get _currentUserId => _supabase.auth.currentUser?.id;
 
+  /// Clear all data (for logout)
+  void clear() {
+    _familyMembers = [];
+    _familyMembersWithProfile = [];
+    _familyInvites = [];
+    _healthSummary = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
   /// Load all family members
   Future<void> loadFamilyMembers() async {
     if (_currentUserId == null) return;

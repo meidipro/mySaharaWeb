@@ -189,32 +189,47 @@ class _AuthWrapperState extends State<AuthWrapper> {
               .maybeSingle();
 
           if (existingProfile == null) {
-            // Create profile for OAuth user
-            final fullName = user.userMetadata?['full_name'] as String? ??
-                            user.userMetadata?['name'] as String? ??
-                            user.email?.split('@')[0] ?? 'User';
+            // Profile should be created by trigger, but if not, wait a bit
+            await Future.delayed(const Duration(milliseconds: 1000));
 
-            await supabase.from('users').insert({
-              'id': user.id,
-              'email': user.email,
-              'full_name': fullName,
-              'created_at': DateTime.now().toIso8601String(),
-            });
+            // Check again
+            final retryProfile = await supabase
+                .from('users')
+                .select()
+                .eq('id', user.id)
+                .maybeSingle();
+
+            if (retryProfile == null) {
+              debugPrint('Warning: User profile not found even after retry. Trigger may have failed.');
+            }
           }
         } catch (e) {
           debugPrint('Error creating user profile: $e');
         }
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Load user profile and navigate
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!mounted) return;
-          context.read<AuthProvider>().loadUserProfile();
-          Get.offAll(() => const HomeScreen());
+
+          await context.read<AuthProvider>().loadUserProfile();
+
+          if (mounted && Get.currentRoute != '/home') {
+            Get.offAll(() => const HomeScreen());
+          }
         });
       } else {
-        // User is logged out
+        // User is logged out - clear all data and navigate to login
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          Get.offAll(() => const LoginScreen());
+
+          // Clear all provider states
+          context.read<HealthRecordProvider>().clear();
+          context.read<FamilyProvider>().clear();
+          context.read<MedicalTimelineProvider>().clear();
+
+          if (Get.currentRoute != '/login') {
+            Get.offAll(() => const LoginScreen());
+          }
         });
       }
     });

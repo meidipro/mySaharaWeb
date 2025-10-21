@@ -11,6 +11,38 @@ import '../providers/language_provider.dart';
 class SidebarDrawer extends StatelessWidget {
   const SidebarDrawer({super.key});
 
+  /// Show logout confirmation dialog
+  void _showLogoutConfirmation(BuildContext context, AuthProvider authProvider, LanguageProvider languageProvider) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(languageProvider.tr('logout')),
+          content: Text(languageProvider.tr('logout_confirmation') ?? 'Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: Text(languageProvider.tr('cancel') ?? 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close dialog
+                await authProvider.signOut();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(languageProvider.tr('logout')),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -123,7 +155,7 @@ class SidebarDrawer extends StatelessWidget {
                   title: languageProvider.tr('logout'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.read<AuthProvider>().signOut();
+                    _showLogoutConfirmation(context, authProvider, languageProvider);
                   },
                   textColor: AppColors.error,
                 ),

@@ -23,6 +23,15 @@ class MedicalTimelineProvider extends ChangeNotifier {
   /// Error message
   String? get errorMessage => _errorMessage;
 
+  /// Clear all data (for logout)
+  void clear() {
+    _timelineEvents = [];
+    _selectedEvent = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
   /// Load all timeline events
   Future<void> loadTimelineEvents() async {
     _setLoading(true);

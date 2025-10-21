@@ -26,6 +26,15 @@ class HealthRecordProvider extends ChangeNotifier {
   /// Error message
   String? get errorMessage => _errorMessage;
 
+  /// Clear all data (for logout)
+  void clear() {
+    _healthRecords = [];
+    _selectedHealthRecord = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
   /// Load all health records
   Future<void> loadHealthRecords() async {
     _setLoading(true);
