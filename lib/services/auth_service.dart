@@ -13,23 +13,17 @@ class AuthService {
     required String fullName,
   }) async {
     try {
+      // Pass full_name in metadata so the trigger can use it
       final response = await SupabaseService.signUp(
         email: email,
         password: password,
+        data: {'full_name': fullName},
       );
 
       if (response.user != null) {
-        // Wait for the database trigger to create the user profile
-        await Future.delayed(const Duration(milliseconds: 800));
-
-        // Update the profile with full_name (trigger only sets id and email)
-        // Use upsert to handle the case where the profile might not exist yet
-        await SupabaseService.client.from('users').upsert({
-          'id': response.user!.id,
-          'email': email,
-          'full_name': fullName,
-          'updated_at': DateTime.now().toIso8601String(),
-        }, onConflict: 'id');
+        // Database trigger automatically creates the user profile with full_name from metadata
+        // Just wait for it to complete
+        await Future.delayed(const Duration(milliseconds: 1000));
 
         return await getUserProfile(response.user!.id);
       }

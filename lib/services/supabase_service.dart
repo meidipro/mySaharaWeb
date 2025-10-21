@@ -16,11 +16,13 @@ class SupabaseService {
   static Future<AuthResponse> signUp({
     required String email,
     required String password,
+    Map<String, dynamic>? data,
   }) async {
     try {
       return await client.auth.signUp(
         email: email,
         password: password,
+        data: data,
       );
     } catch (e) {
       print('Supabase signUp error: $e');
