@@ -11,10 +11,7 @@ export PATH="$PATH:`pwd`/flutter/bin"
 # 2. Verify Flutter installation
 flutter --version
 
-# 3. Navigate into the app directory, get dependencies, and build
-echo "--- Entering app directory --- "
-cd my_sahara_app
-
+# 3. Get dependencies and build (we're already in the app directory)
 echo "--- Getting Flutter dependencies --- "
 flutter pub get
 
