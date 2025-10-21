@@ -1,9 +1,7 @@
-# Flutter
+# Build artifacts (keep source files for building)
 .dart_tool/
 .packages
 .pub/
-build/
-!build/web/
 
 # IDE
 .idea/
@@ -14,20 +12,10 @@ build/
 
 # Environment
 .env
-.env.*
-!.env.example
 
-# Source files
-lib/
-test/
-android/
-ios/
-windows/
-linux/
-macos/
-web/
-assets/
-analysis_options.yaml
-pubspec.yaml
-pubspec.lock
-README.md
+# These are needed for building, so don't ignore them:
+# - lib/
+# - pubspec.yaml
+# - pubspec.lock
+# - web/
+# - assets/
