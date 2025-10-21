@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -54,9 +54,10 @@ class SupabaseService {
   // Google Sign-In using Supabase OAuth
   static Future<bool> signInWithGoogle() async {
     try {
+      // Don't specify redirectTo - Supabase will use current URL automatically
+      // This works for both localhost development and production
       await client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'http://localhost:3000',
       );
       return true;
     } catch (e) {
