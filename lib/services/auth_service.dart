@@ -22,9 +22,22 @@ class AuthService {
 
       if (response.user != null) {
         // Database trigger automatically creates the user profile with full_name from metadata
-        // Just wait for it to complete
+        // Wait for it to complete
         await Future.delayed(const Duration(milliseconds: 1000));
 
+        // If email confirmation is required, user won't have a session yet
+        // Return a basic user model without fetching from database
+        if (response.session == null) {
+          // Email confirmation required - return basic info
+          return UserModel(
+            id: response.user!.id,
+            email: email,
+            fullName: fullName,
+            createdAt: DateTime.now(),
+          );
+        }
+
+        // User has a session, fetch full profile
         return await getUserProfile(response.user!.id);
       }
       return null;
