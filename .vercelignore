@@ -1,0 +1,33 @@
+# Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+!build/web/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Source files
+lib/
+test/
+android/
+ios/
+windows/
+linux/
+macos/
+web/
+assets/
+analysis_options.yaml
+pubspec.yaml
+pubspec.lock
+README.md
