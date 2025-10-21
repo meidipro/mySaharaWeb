@@ -19,13 +19,17 @@ class AuthService {
       );
 
       if (response.user != null) {
-        // Create user profile
-        await SupabaseService.client.from('users').insert({
+        // Wait for the database trigger to create the user profile
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        // Update the profile with full_name (trigger only sets id and email)
+        // Use upsert to handle the case where the profile might not exist yet
+        await SupabaseService.client.from('users').upsert({
           'id': response.user!.id,
           'email': email,
           'full_name': fullName,
-          'created_at': DateTime.now().toIso8601String(),
-        });
+          'updated_at': DateTime.now().toIso8601String(),
+        }, onConflict: 'id');
 
         return await getUserProfile(response.user!.id);
       }
