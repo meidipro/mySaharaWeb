@@ -27,13 +27,28 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Load environment variables
+    // Load environment variables (only works for mobile, not web)
     await dotenv.load(fileName: ".env");
+
+    // For web, environment variables must be hardcoded at build time
+    // For mobile, they're loaded from .env file
+    const supabaseUrl = String.fromEnvironment(
+      'SUPABASE_URL',
+      defaultValue: 'https://fbnliqznxpdjhesctbmy.supabase.co',
+    );
+    const supabaseAnonKey = String.fromEnvironment(
+      'SUPABASE_ANON_KEY',
+      defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZibmxpcXpueHBkamhlc2N0Ym15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg2NDMwMjksImV4cCI6MjA0NDIxOTAyOX0.w3xRu5vQZ6KDyPdRNq9IbTRlLMDXzKzMUJ-aGX0Mmpc',
+    );
 
     // Initialize Supabase with auth flow configuration
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL'] ?? '',
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+      url: dotenv.env['SUPABASE_URL']?.isNotEmpty == true
+          ? dotenv.env['SUPABASE_URL']!
+          : supabaseUrl,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']?.isNotEmpty == true
+          ? dotenv.env['SUPABASE_ANON_KEY']!
+          : supabaseAnonKey,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),
