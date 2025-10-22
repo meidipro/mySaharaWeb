@@ -19,6 +19,7 @@ import 'screens/home/home_screen.dart';
 import 'screens/ai_chat/ai_chat_screen.dart';
 import 'screens/ai_chat/chat_history_screen.dart';
 import 'screens/share/view_shared_history_screen.dart';
+import 'screens/landing/landing_screen.dart';
 import 'services/notification_service.dart';
 import 'services/medication_notification_service.dart';
 import 'services/appointment_notification_service.dart';
@@ -27,11 +28,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Load environment variables (only works for mobile, not web)
-    await dotenv.load(fileName: ".env");
-
     // For web, environment variables must be hardcoded at build time
-    // For mobile, they're loaded from .env file
+    // For mobile, they can be loaded from .env file
     const supabaseUrl = String.fromEnvironment(
       'SUPABASE_URL',
       defaultValue: 'https://fbnliqznxpdjhesctbmy.supabase.co',
@@ -41,32 +39,50 @@ void main() async {
       defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZibmxpcXpueHBkamhlc2N0Ym15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxOTQ1NzYsImV4cCI6MjA3NTc3MDU3Nn0.PBxXxHBsYaUqXB9yw_7WyLKTnMGRJ7PO_LiMa92z3bw',
     );
 
+    // Try to load .env file (works on mobile, fails gracefully on web)
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (e) {
+      debugPrint('No .env file found, using default values (normal for web)');
+    }
+
     // Initialize Supabase with auth flow configuration
+    final urlToUse = dotenv.env['SUPABASE_URL']?.isNotEmpty == true
+        ? dotenv.env['SUPABASE_URL']!
+        : supabaseUrl;
+    final keyToUse = dotenv.env['SUPABASE_ANON_KEY']?.isNotEmpty == true
+        ? dotenv.env['SUPABASE_ANON_KEY']!
+        : supabaseAnonKey;
+
+    debugPrint('Initializing Supabase...');
+    debugPrint('URL: $urlToUse');
+    debugPrint('Key length: ${keyToUse.length}');
+
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']?.isNotEmpty == true
-          ? dotenv.env['SUPABASE_URL']!
-          : supabaseUrl,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']?.isNotEmpty == true
-          ? dotenv.env['SUPABASE_ANON_KEY']!
-          : supabaseAnonKey,
+      url: urlToUse,
+      anonKey: keyToUse,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),
       debug: true,
     );
 
-    // Initialize notification service
-    await NotificationService().initialize();
+    debugPrint('Supabase initialized successfully!');
 
-    // Initialize medication notification service
-    final medicationNotificationService = MedicationNotificationService();
-    await medicationNotificationService.initialize();
-
-    // Initialize appointment notification service
-    final appointmentNotificationService = AppointmentNotificationService();
-    await appointmentNotificationService.initialize();
+    // Initialize notification services (only on mobile, skip on web)
+    try {
+      await NotificationService().initialize();
+      final medicationNotificationService = MedicationNotificationService();
+      await medicationNotificationService.initialize();
+      final appointmentNotificationService = AppointmentNotificationService();
+      await appointmentNotificationService.initialize();
+    } catch (e) {
+      debugPrint('Notification services not available (normal for web): $e');
+    }
   } catch (e) {
     debugPrint('Initialization error: $e');
+    // Re-throw to prevent app from running in bad state
+    rethrow;
   }
 
   // Initialize language provider
@@ -218,7 +234,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           }
         });
       } else {
-        // User is logged out - clear all data and navigate to login
+        // User is logged out - clear all data and navigate to landing/login
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
 
@@ -227,8 +243,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
           context.read<FamilyProvider>().clear();
           context.read<MedicalTimelineProvider>().clear();
 
-          if (Get.currentRoute != '/login') {
-            Get.offAll(() => const LoginScreen());
+          // Check if running on web - show landing page, otherwise login
+          final isWeb = ResponsiveBreakpoints.of(context).isDesktop ||
+                        ResponsiveBreakpoints.of(context).isTablet;
+
+          if (Get.currentRoute != '/landing' && Get.currentRoute != '/login') {
+            if (isWeb) {
+              Get.offAll(() => const LandingScreen());
+            } else {
+              Get.offAll(() => const LoginScreen());
+            }
           }
         });
       }
@@ -256,8 +280,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
       });
       return const HomeScreen();
     } else {
-      // User is not logged in
-      return const LoginScreen();
+      // User is not logged in - show landing page for web, login for mobile
+      final isWeb = ResponsiveBreakpoints.of(context).isDesktop ||
+                    ResponsiveBreakpoints.of(context).isTablet;
+
+      return isWeb ? const LandingScreen() : const LoginScreen();
     }
   }
 }
