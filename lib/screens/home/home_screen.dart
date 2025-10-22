@@ -230,7 +230,7 @@ class _DashboardTab extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Summary cards
-              _buildSummaryCards(context, healthRecordProvider, familyProvider, languageProvider),
+              _buildSummaryCards(context, healthRecordProvider, familyProvider, languageProvider, isMobile),
               const SizedBox(height: 24),
 
               // Quick actions
@@ -474,6 +474,7 @@ class _DashboardTab extends StatelessWidget {
     HealthRecordProvider provider,
     FamilyProvider familyProvider,
     LanguageProvider languageProvider,
+    bool isMobile,
   ) {
     return GridView.count(
       shrinkWrap: true,
