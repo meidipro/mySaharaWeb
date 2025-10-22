@@ -171,11 +171,20 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   StreamSubscription<AuthState>? _authSubscription;
+  bool _isInitialLoad = true;
 
   @override
   void initState() {
     super.initState();
     _setupAuthListener();
+    // After first frame, we're no longer in initial load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _isInitialLoad = false;
+        });
+      }
+    });
   }
 
   @override
@@ -191,6 +200,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // Listen to auth state changes
     _authSubscription = supabase.auth.onAuthStateChange.listen((data) async {
       if (!mounted) return;
+
+      // Skip navigation on initial load - let the build method handle it
+      if (_isInitialLoad) return;
 
       final session = data.session;
 
@@ -249,7 +261,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
           final isWeb = ResponsiveBreakpoints.of(context).isDesktop ||
                         ResponsiveBreakpoints.of(context).isTablet;
 
-          if (Get.currentRoute != '/landing' && Get.currentRoute != '/login') {
+          // Only navigate if we're not already on the landing or login screen
+          final currentRoute = Get.currentRoute;
+          if (currentRoute != '/landing' &&
+              currentRoute != '/login' &&
+              currentRoute != '/' &&
+              !currentRoute.contains('AuthWrapper')) {
             if (isWeb) {
               Get.offAll(() => const LandingScreen());
             } else {
