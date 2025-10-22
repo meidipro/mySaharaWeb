@@ -40,17 +40,19 @@ void main() async {
     );
 
     // Try to load .env file (works on mobile, fails gracefully on web)
+    bool envLoaded = false;
     try {
       await dotenv.load(fileName: ".env");
+      envLoaded = true;
     } catch (e) {
       debugPrint('No .env file found, using default values (normal for web)');
     }
 
     // Initialize Supabase with auth flow configuration
-    final urlToUse = dotenv.env['SUPABASE_URL']?.isNotEmpty == true
+    final urlToUse = envLoaded && dotenv.env['SUPABASE_URL']?.isNotEmpty == true
         ? dotenv.env['SUPABASE_URL']!
         : supabaseUrl;
-    final keyToUse = dotenv.env['SUPABASE_ANON_KEY']?.isNotEmpty == true
+    final keyToUse = envLoaded && dotenv.env['SUPABASE_ANON_KEY']?.isNotEmpty == true
         ? dotenv.env['SUPABASE_ANON_KEY']!
         : supabaseAnonKey;
 
