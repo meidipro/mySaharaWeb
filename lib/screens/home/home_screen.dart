@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
@@ -394,6 +395,8 @@ class _DashboardTab extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 24),
+        _buildHealthChart(context, bmi, bmr, bmiCategory, languageProvider),
       ],
     );
   }
@@ -466,6 +469,87 @@ class _DashboardTab extends StatelessWidget {
     if (bmi < 25) return AppColors.success;
     if (bmi < 30) return AppColors.healthOrange;
     return AppColors.error;
+  }
+
+  /// Build health chart
+  Widget _buildHealthChart(
+    BuildContext context,
+    double bmi,
+    double bmr,
+    String? bmiCategory,
+    LanguageProvider languageProvider,
+  ) {
+    return SizedBox(
+      height: 200,
+      child: BarChart(
+        BarChartData(
+          barGroups: [ 
+            BarChartGroupData(
+              x: 0,
+              barRods: [
+                BarChartRodData(
+                  toY: bmi,
+                  color: _getBMIColor(bmi),
+                  width: 20,
+                ),
+              ],
+            ),
+            BarChartGroupData(
+              x: 1,
+              barRods: [
+                BarChartRodData(
+                  toY: bmr,
+                  color: AppColors.healthBlue,
+                  width: 20,
+                ),
+              ],
+            ),
+          ],
+          titlesData: FlTitlesData(
+            show: true,
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  String text;
+                  switch (value.toInt()) {
+                    case 0:
+                      text = languageProvider.tr('bmi');
+                      break;
+                    case 1:
+                      text = languageProvider.tr('bmr');
+                      break;
+                    default:
+                      text = '';
+                      break;
+                  }
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 4,
+                    child: Text(text, style: const TextStyle(fontSize: 10)),
+                  );
+                },
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 28,
+                getTitlesWidget: (value, meta) {
+                  return Text(value.toInt().toString(), style: const TextStyle(fontSize: 10));
+                },
+              ),
+            ),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(
+            show: false,
+          ),
+          gridData: const FlGridData(show: false),
+        ),
+      ),
+    );
   }
 
   /// Build summary cards
