@@ -63,8 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final languageProvider = context.watch<LanguageProvider>();
 
     return Scaffold(
+      appBar: isMobile ? null : _buildTopNavigationBar(languageProvider),
       drawer: const SidebarDrawer(),
-      body: _buildBody(),
+      body: _buildBody(isMobile),
       bottomNavigationBar: isMobile ? _buildBottomNavigationBar() : null,
       floatingActionButton: _selectedIndex == 1
           ? FloatingActionButton.extended(
@@ -78,11 +79,54 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Build top navigation bar for web/desktop
+  PreferredSizeWidget _buildTopNavigationBar(LanguageProvider languageProvider) {
+    final navigationItems = [
+      {'label': languageProvider.tr('home'), 'index': 0},
+      {'label': languageProvider.tr('records'), 'index': 1},
+      {'label': languageProvider.tr('medical_history'), 'index': 2},
+      {'label': languageProvider.tr('family'), 'index': 3},
+      {'label': languageProvider.tr('ai_assistant'), 'index': 4},
+    ];
+
+    return AppBar(
+      title: Row(
+        children: navigationItems.map((item) {
+          return TextButton(
+            onPressed: () => _onItemTapped(item['index'] as int),
+            style: TextButton.styleFrom(
+              foregroundColor: _selectedIndex == (item['index'] as int)
+                  ? AppColors.textWhite
+                  : AppColors.textWhite.withOpacity(0.7),
+            ),
+            child: Text(item['label'] as String),
+          );
+        }).toList(),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.account_circle, color: AppColors.textWhite),
+          onPressed: () {
+            // TODO: Navigate to profile screen or show profile dropdown
+          },
+        ),
+        Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: AppColors.textWhite),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      ],
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.textWhite,
+    );
+  }
+
   /// Build the body content based on selected tab
-  Widget _buildBody() {
+  Widget _buildBody(bool isMobile) {
     switch (_selectedIndex) {
       case 0:
-        return const _DashboardTab();
+        return _DashboardTab(showAppBar: isMobile);
       case 1:
         return const HealthRecordsListScreen();
       case 2:
@@ -92,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 4:
         return const AiChatScreen();
       default:
-        return const _DashboardTab();
+        return _DashboardTab(showAppBar: isMobile);
     }
   }
 
@@ -126,7 +170,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
 /// Dashboard tab showing health summary
 class _DashboardTab extends StatelessWidget {
-  const _DashboardTab();
+  final bool showAppBar;
+  const _DashboardTab({super.key, this.showAppBar = true});
 
   @override
   Widget build(BuildContext context) {
@@ -138,38 +183,38 @@ class _DashboardTab extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        // App bar
-        SliverAppBar(
-          floating: true,
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textWhite,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                languageProvider.tr('welcome_back'),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textWhite.withOpacity(0.9),
-                    ),
-              ),
-              Text(
-                authProvider.user?.fullName ?? languageProvider.tr('user'),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.textWhite,
-                      fontWeight: FontWeight.bold,
-                    ),
+        if (showAppBar) // Conditionally render SliverAppBar
+          SliverAppBar(
+            floating: true,
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.textWhite,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  languageProvider.tr('welcome_back'),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textWhite.withOpacity(0.9),
+                      ),
+                ),
+                Text(
+                  authProvider.user?.fullName ?? languageProvider.tr('user'),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppColors.textWhite,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () {
+                  // TODO: Navigate to notifications
+                },
               ),
             ],
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              onPressed: () {
-                // TODO: Navigate to notifications
-              },
-            ),
-          ],
-        ),
 
         // Content
         SliverPadding(
@@ -433,7 +478,7 @@ class _DashboardTab extends StatelessWidget {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
+      crossAxisCount: isMobile ? 2 : 4,
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
       childAspectRatio: 1.3,
@@ -576,7 +621,7 @@ class _DashboardTab extends StatelessWidget {
             crossAxisCount: isMobile ? 2 : 4,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 1.5,
+            childAspectRatio: isMobile ? 1.5 : 1.0,
           ),
           itemCount: actions.length,
           itemBuilder: (context, index) {
