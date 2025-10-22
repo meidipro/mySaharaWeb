@@ -134,6 +134,7 @@ class MyApp extends StatelessWidget {
 
         // Route definitions
         getPages: [
+          GetPage(name: '/landing', page: () => const LandingScreen()),
           GetPage(name: '/login', page: () => const LoginScreen()),
           GetPage(name: '/home', page: () => const HomeScreen()),
           GetPage(name: '/ai-chat', page: () => const AiChatScreen()),
@@ -201,8 +202,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
     _authSubscription = supabase.auth.onAuthStateChange.listen((data) async {
       if (!mounted) return;
 
-      // Skip navigation on initial load - let the build method handle it
-      if (_isInitialLoad) return;
+      // Only react to actual auth events, not initial session checks
+      final event = data.event;
+      if (event != AuthChangeEvent.signedIn &&
+          event != AuthChangeEvent.signedOut &&
+          event != AuthChangeEvent.tokenRefreshed) {
+        return;
+      }
 
       final session = data.session;
 
@@ -244,7 +250,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           await context.read<AuthProvider>().loadUserProfile();
 
           if (mounted && Get.currentRoute != '/home') {
-            Get.offAll(() => const HomeScreen());
+            Get.offAllNamed('/home');
           }
         });
       } else {
@@ -263,15 +269,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
           // Only navigate if we're not already on the landing or login screen
           final currentRoute = Get.currentRoute;
-          if (currentRoute != '/landing' &&
-              currentRoute != '/login' &&
-              currentRoute != '/' &&
-              !currentRoute.contains('AuthWrapper')) {
-            if (isWeb) {
-              Get.offAll(() => const LandingScreen());
-            } else {
-              Get.offAll(() => const LoginScreen());
-            }
+
+          // Don't navigate if already on landing or login, or if this is initial load
+          if (currentRoute == '/landing' || currentRoute == '/login') {
+            return;
+          }
+
+          // Navigate based on device type
+          if (isWeb) {
+            Get.offAllNamed('/landing');
+          } else {
+            Get.offAllNamed('/login');
           }
         });
       }
