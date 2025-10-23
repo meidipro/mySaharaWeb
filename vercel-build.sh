@@ -16,6 +16,6 @@ echo "--- Getting Flutter dependencies --- "
 flutter pub get
 
 echo "--- Building Flutter web app --- "
-flutter build web --release
+flutter build web --release --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY --dart-define=WEB_VIEWER_URL=$WEB_VIEWER_URL
 
 echo "--- Build Complete --- "

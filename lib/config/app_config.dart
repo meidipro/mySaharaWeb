@@ -40,11 +40,10 @@ class AppConfig {
   }
 
   // Web Viewer URL for QR code sharing
-  static String get webViewerUrl {
-    final fromEnv = dotenv.env['WEB_VIEWER_URL'];
-    if (fromEnv != null && fromEnv.isNotEmpty) return fromEnv;
-    return 'http://localhost:3000'; // Fallback for local development
-  }
+  static String get webViewerUrl => const String.fromEnvironment(
+        'WEB_VIEWER_URL',
+        defaultValue: 'http://localhost:3000',
+      );
 
   // App Constants
   static const String appName = 'mySahara';
