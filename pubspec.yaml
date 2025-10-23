@@ -61,14 +61,14 @@ dependencies:
 
   # Utilities
   url_launcher: ^6.3.0
-  share_plus: ^9.0.0
+  share_plus: ^12.0.1
   uuid: ^4.4.0
   flutter_dotenv: ^5.1.0
   shared_preferences: ^2.2.3
 
   # PDF Generation
   pdf: ^3.10.8
-  printing: ^5.12.0
+  printing: ^5.14.2
 
   # Responsive Design
   responsive_framework: ^1.4.0

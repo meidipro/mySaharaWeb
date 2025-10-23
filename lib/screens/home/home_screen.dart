@@ -226,8 +226,12 @@ class _DashboardTab extends StatelessWidget {
               _buildDateCard(context),
               const SizedBox(height: 24),
 
-              // Health Metrics (BMI & BMR)
-              _buildHealthMetrics(context, authProvider, languageProvider),
+    // Health Metrics (BMI & BMR)
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  return _buildHealthMetrics(context, authProvider, languageProvider);
+                },
+              ),
               const SizedBox(height: 24),
 
               // Summary cards

@@ -147,6 +147,9 @@ class _HealthCalculatorScreenState extends State<HealthCalculatorScreen> {
       final success = await authProvider.updateProfile(updatedUser);
 
       if (success && mounted) {
+        // Reload user profile to get updated BMI/BMR values
+        await authProvider.loadUserProfile();
+
         Get.snackbar(
           'Success',
           'Health metrics saved successfully',
