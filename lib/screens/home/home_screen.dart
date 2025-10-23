@@ -399,8 +399,6 @@ class _DashboardTab extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 24),
-        _buildHealthChart(context, bmi, bmr, bmiCategory, languageProvider),
       ],
     );
   }
