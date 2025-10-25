@@ -129,11 +129,11 @@ class MyApp extends StatelessWidget {
         ),
 
         // Initial route based on authentication status
-        home: const AuthWrapper(),
-        initialRoute: null,
+        initialRoute: '/',
 
         // Route definitions
         getPages: [
+          GetPage(name: '/', page: () => const AuthWrapper()),
           GetPage(name: '/landing', page: () => const LandingScreen()),
           GetPage(name: '/login', page: () => const LoginScreen()),
           GetPage(name: '/home', page: () => const HomeScreen()),
