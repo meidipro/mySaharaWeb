@@ -126,18 +126,18 @@ class FamilyMembersOverviewWidget extends StatelessWidget {
   }
 
   Widget _buildFamilyMembersGrid(BuildContext context, List familyMembers) {
-    // Show up to 4 family members + "Add More" card
-    final displayCount = familyMembers.length > 3 ? 3 : familyMembers.length;
+    // Show up to 5 family members + "Add More" card
+    final displayCount = familyMembers.length > 5 ? 5 : familyMembers.length;
     final members = familyMembers.take(displayCount).toList();
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.5,
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.1,
       ),
       itemCount: members.length + 1, // +1 for "Add More" card
       itemBuilder: (context, index) {
@@ -192,38 +192,38 @@ class FamilyMembersOverviewWidget extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: iconColor.withOpacity(0.1),
                 ),
-                child: Icon(icon, color: iconColor, size: 32),
+                child: Icon(icon, color: iconColor, size: 24),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 relationship,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -251,7 +251,7 @@ class FamilyMembersOverviewWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primary.withOpacity(0.1),
@@ -259,14 +259,14 @@ class FamilyMembersOverviewWidget extends StatelessWidget {
               child: Icon(
                 Icons.person_add,
                 color: AppColors.primary,
-                size: 32,
+                size: 24,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Add Member',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primary,
               ),
