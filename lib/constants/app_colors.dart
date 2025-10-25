@@ -39,6 +39,7 @@ class AppColors {
   static const Color healthBlue = Color(0xFF2196F3);
   static const Color healthOrange = Color(0xFFFF9800);
   static const Color healthPurple = Color(0xFF9C27B0);
+  static const Color healthPink = Color(0xFFE91E63);
 
   // Category Colors for Medical Documents
   static const Color prescription = Color(0xFF9C27B0);

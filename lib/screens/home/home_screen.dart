@@ -17,6 +17,8 @@ import '../timeline/medical_timeline_screen.dart';
 import '../family/family_dashboard_screen.dart';
 import '../profile/health_calculator_screen.dart';
 import '../../widgets/sidebar_drawer.dart';
+import '../../widgets/dashboard/family_members_overview_widget.dart';
+import '../../widgets/dashboard/family_health_score_widget.dart';
 import '../share/select_history_to_share_screen.dart';
 import '../share/qr_code_scanner_screen.dart';
 
@@ -226,7 +228,15 @@ class _DashboardTab extends StatelessWidget {
               _buildDateCard(context),
               const SizedBox(height: 24),
 
-    // Health Metrics (BMI & BMR)
+              // Family Health Score Widget (NEW!)
+              const FamilyHealthScoreWidget(),
+              const SizedBox(height: 24),
+
+              // Family Members Overview (NEW!)
+              const FamilyMembersOverviewWidget(),
+              const SizedBox(height: 24),
+
+              // Health Metrics (BMI & BMR)
               Consumer<AuthProvider>(
                 builder: (context, authProvider, child) {
                   return _buildHealthMetrics(context, authProvider, languageProvider);
