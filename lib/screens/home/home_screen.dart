@@ -22,6 +22,9 @@ import '../../widgets/dashboard/family_health_score_widget.dart';
 import '../../widgets/dashboard/family_health_insights_widget.dart';
 import '../../widgets/dashboard/medication_reminders_widget.dart';
 import '../../widgets/dashboard/upcoming_appointments_widget.dart';
+import '../../widgets/dashboard/quick_family_stats_widget.dart';
+import '../../widgets/dashboard/family_health_activity_widget.dart';
+import '../../widgets/dashboard/family_chronic_diseases_widget.dart';
 import '../share/select_history_to_share_screen.dart';
 import '../share/qr_code_scanner_screen.dart';
 
@@ -231,7 +234,11 @@ class _DashboardTab extends StatelessWidget {
               _buildDateCard(context),
               const SizedBox(height: 24),
 
-              // Family Health Score Widget (NEW!)
+              // Quick Family Stats (Phase 5)
+              const QuickFamilyStatsWidget(),
+              const SizedBox(height: 24),
+
+              // Family Health Score Widget (Phase 3)
               const FamilyHealthScoreWidget(),
               const SizedBox(height: 24),
 
@@ -249,6 +256,14 @@ class _DashboardTab extends StatelessWidget {
 
               // Upcoming Appointments (Phase 4)
               const UpcomingAppointmentsWidget(),
+              const SizedBox(height: 24),
+
+              // Chronic Diseases Summary (Phase 5)
+              const FamilyChronicDiseasesWidget(),
+              const SizedBox(height: 24),
+
+              // Health Activity Timeline (Phase 5)
+              const FamilyHealthActivityWidget(),
               const SizedBox(height: 24),
 
               // Health Metrics (BMI & BMR)
