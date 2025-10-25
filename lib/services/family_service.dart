@@ -558,4 +558,53 @@ class FamilyService {
       throw Exception('Failed to get family members with profile: $e');
     }
   }
+
+  /// Create default "Me" entry as first family member
+  Future<FamilyMember> createDefaultSelfMember() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get user profile
+      final userProfile = await _client
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+      final user = UserProfile.fromJson(userProfile);
+
+      // Check if already exists
+      final existing = await _client
+          .from('family_members')
+          .select()
+          .eq('user_id', userId)
+          .eq('is_self', true)
+          .maybeSingle();
+
+      if (existing != null) {
+        return FamilyMember.fromJson(existing);
+      }
+
+      // Create "Me" family member
+      final selfMember = FamilyMember(
+        userId: userId,
+        linkedUserId: null, // Self entry doesn't link to another user
+        fullName: user.fullName ?? user.email,
+        relationship: 'Me',
+        gender: user.gender,
+        bloodGroup: user.bloodGroup,
+        chronicDiseases: user.chronicDiseases,
+        allergies: user.allergies,
+        isSelf: true,
+        createdAt: DateTime.now(),
+      );
+
+      return await addFamilyMember(selfMember);
+    } catch (e) {
+      throw Exception('Failed to create self member: $e');
+    }
+  }
 }

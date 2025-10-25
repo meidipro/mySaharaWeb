@@ -20,6 +20,7 @@ import 'screens/ai_chat/ai_chat_screen.dart';
 import 'screens/ai_chat/chat_history_screen.dart';
 import 'screens/share/view_shared_history_screen.dart';
 import 'screens/landing/landing_screen.dart';
+import 'screens/onboarding/welcome_screen.dart';
 import 'services/notification_service.dart';
 import 'services/medication_notification_service.dart';
 import 'services/appointment_notification_service.dart';
@@ -243,13 +244,26 @@ class _AuthWrapperState extends State<AuthWrapper> {
           debugPrint('Error creating user profile: $e');
         }
 
-        // Load user profile and navigate
+        // Load user profile and check if onboarding needed
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!mounted) return;
 
           await context.read<AuthProvider>().loadUserProfile();
 
-          if (mounted && Get.currentRoute != '/home') {
+          if (!mounted) return;
+
+          // Check if this is a new user who needs onboarding
+          final familyProvider = context.read<FamilyProvider>();
+          await familyProvider.loadFamilyMembers();
+
+          if (!mounted) return;
+
+          // If user has no family members, show welcome screen
+          final needsOnboarding = familyProvider.familyMembers.isEmpty;
+
+          if (needsOnboarding) {
+            Get.offAll(() => const WelcomeScreen());
+          } else if (Get.currentRoute != '/home') {
             Get.offAllNamed('/home');
           }
         });

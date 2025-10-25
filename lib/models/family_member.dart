@@ -12,6 +12,7 @@ class FamilyMember {
   final String? allergies;
   final String? notes;
   final String? profileImageUrl;
+  final bool isSelf; // True if this is the user's own profile
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -29,6 +30,7 @@ class FamilyMember {
     this.allergies,
     this.notes,
     this.profileImageUrl,
+    this.isSelf = false,
     required this.createdAt,
     this.updatedAt,
   });
@@ -48,6 +50,7 @@ class FamilyMember {
       allergies: json['allergies'] as String?,
       notes: json['notes'] as String?,
       profileImageUrl: json['profile_image_url'] as String?,
+      isSelf: json['is_self'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
@@ -70,6 +73,7 @@ class FamilyMember {
       if (allergies != null) 'allergies': allergies,
       if (notes != null) 'notes': notes,
       if (profileImageUrl != null) 'profile_image_url': profileImageUrl,
+      'is_self': isSelf,
       'created_at': createdAt.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
     };

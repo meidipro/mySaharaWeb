@@ -168,7 +168,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (success && mounted) {
         Get.snackbar(
           'Success',
-          'Welcome to mySahara!',
+          'Welcome to My Sahara!',
           backgroundColor: AppColors.success,
           colorText: AppColors.textWhite,
           snackPosition: SnackPosition.BOTTOM,
@@ -230,7 +230,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   children: [
                     // Header
                     Text(
-                      'Join mySahara',
+                      'Protect Your Family',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             color: AppColors.primary,
@@ -239,7 +239,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Create your account to start managing your health records',
+                      'Create your account to start managing health records for your entire family',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.textSecondary,
