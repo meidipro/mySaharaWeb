@@ -51,58 +51,58 @@ class FeaturesSection extends StatelessWidget {
     final features = [
       _FeatureData(
         icon: Icons.folder_open,
-        title: 'Document Management',
+        title: 'Family Health Records',
         description:
-            'Store and organize all your medical documents, lab reports, and prescriptions in one secure place.',
+            'Store medical documents for everyone - parents, children, grandparents. Never lose prescriptions or reports again.',
         color: AppColors.primary,
       ),
       _FeatureData(
         icon: Icons.qr_code_scanner,
-        title: 'QR Code Sharing',
+        title: 'Family Health QR Code',
         description:
-            'Share your medical history instantly with doctors using secure QR codes. No more carrying physical documents.',
+            'Share your family\'s medical history with doctors in one scan. Include genetic risk factors for better diagnosis.',
         color: Colors.purple,
       ),
       _FeatureData(
         icon: Icons.medication,
-        title: 'Medication Tracking',
+        title: 'Family Medication Tracking',
         description:
-            'Keep track of all your medications, set reminders, and never miss a dose. Manage prescriptions effortlessly.',
+            'Track medicines for elderly parents, children, everyone. Smart reminders ensure no family member misses a dose.',
         color: Colors.green,
       ),
       _FeatureData(
         icon: Icons.calendar_month,
-        title: 'Appointment Management',
+        title: 'Family Appointments',
         description:
-            'Schedule and manage doctor appointments. Get reminders and keep track of your medical visits.',
+            'Manage doctor visits for the whole family. Get reminders for everyone\'s checkups and vaccinations.',
         color: Colors.orange,
       ),
       _FeatureData(
         icon: Icons.family_restroom,
-        title: 'Family Health Records',
+        title: 'Multi-Member Profiles',
         description:
-            'Manage health records for your entire family. Add family members and keep everyone\'s health organized.',
+            'Create profiles for up to 6 family members. Each with their own health records, medications, and timeline.',
         color: Colors.pink,
       ),
       _FeatureData(
         icon: Icons.smart_toy,
         title: 'AI Health Assistant',
         description:
-            'Get instant answers to health questions with our AI-powered chat assistant. Available 24/7.',
+            'Ask about anyone\'s health. "আব্বুর ডায়াবেটিস..." AI understands family context in Bangla and English.',
         color: Colors.blue,
       ),
       _FeatureData(
         icon: Icons.timeline,
-        title: 'Medical Timeline',
+        title: 'Family Health Timeline',
         description:
-            'View your complete medical history in a beautiful timeline. Track your health journey over time.',
+            'View complete medical history for each family member. Track chronic conditions and health progress over time.',
         color: Colors.teal,
       ),
       _FeatureData(
-        icon: Icons.cloud_upload,
-        title: 'AI Document Analysis',
+        icon: Icons.warning_amber_rounded,
+        title: 'Genetic Risk Alerts',
         description:
-            'Upload any medical document and get instant AI-powered analysis and insights about your health data.',
+            'AI analyzes family disease patterns and alerts you to genetic risks. Protect your whole family proactively.',
         color: Colors.indigo,
       ),
     ];

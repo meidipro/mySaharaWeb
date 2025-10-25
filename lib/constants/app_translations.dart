@@ -2,7 +2,7 @@
 class AppTranslations {
   static const Map<String, Map<String, String>> _translations = {
     // Common
-    'app_name': {'en': 'mySahara', 'bn': 'মাইসাহারা'},
+    'app_name': {'en': 'My Sahara: For You & Your Family', 'bn': 'মাই সাহারা: আপনার ও আপনার পরিবারের জন্য'},
     'welcome': {'en': 'Welcome', 'bn': 'স্বাগতম'},
     'save': {'en': 'Save', 'bn': 'সংরক্ষণ করুন'},
     'cancel': {'en': 'Cancel', 'bn': 'বাতিল'},
@@ -29,9 +29,9 @@ class AppTranslations {
 
     // Navigation
     'home': {'en': 'Home', 'bn': 'হোম'},
-    'records': {'en': 'Records', 'bn': 'রেকর্ড'},
+    'records': {'en': 'Family Records', 'bn': 'পরিবার রেকর্ড'},
     'timeline': {'en': 'Timeline', 'bn': 'টাইমলাইন'},
-    'medical_history': {'en': 'Medi History', 'bn': 'ইতিহাস'},
+    'medical_history': {'en': 'Family History', 'bn': 'পরিবার ইতিহাস'},
     'family': {'en': 'Family', 'bn': 'পরিবার'},
     'ai_assistant': {'en': 'AI Assistant', 'bn': 'এআই সহায়ক'},
     'ai_nutrition_fitness': {'en': 'AI Coach', 'bn': 'এআই কোচ'},
@@ -39,15 +39,15 @@ class AppTranslations {
 
     // Home Screen
     'welcome_back': {'en': 'Welcome back,', 'bn': 'ফিরে আসার জন্য স্বাগতম,'},
-    'documents': {'en': 'Documents', 'bn': 'নথি'},
-    'medications': {'en': 'Medications', 'bn': 'ওষুধ'},
-    'appointments': {'en': 'Appointments', 'bn': 'অ্যাপয়েন্টমেন্ট'},
-    'quick_actions': {'en': 'Quick Actions', 'bn': 'দ্রুত কাজ'},
-    'scan_document': {'en': 'Scan Document', 'bn': 'নথি স্ক্যান'},
-    'scan_qr': {'en': 'Scan QR', 'bn': 'QR স্ক্যান'},
-    'share_history': {'en': 'Share History', 'bn': 'ইতিহাস শেয়ার'},
-    'upload_file': {'en': 'Upload File', 'bn': 'ফাইল আপলোড'},
-    'recent_documents': {'en': 'Recent Documents', 'bn': 'সাম্প্রতিক নথি'},
+    'documents': {'en': 'Family Documents', 'bn': 'পরিবার নথি'},
+    'medications': {'en': 'Family Medications', 'bn': 'পরিবার ওষুধ'},
+    'appointments': {'en': 'Family Appointments', 'bn': 'পরিবার অ্যাপয়েন্টমেন্ট'},
+    'quick_actions': {'en': 'Quick Family Actions', 'bn': 'দ্রুত পরিবার কাজ'},
+    'scan_document': {'en': 'Add Family Document', 'bn': 'পরিবার নথি যোগ করুন'},
+    'scan_qr': {'en': 'Scan Family QR', 'bn': 'পরিবার QR স্ক্যান'},
+    'share_history': {'en': 'Share Family History', 'bn': 'পরিবার ইতিহাস শেয়ার'},
+    'upload_file': {'en': 'Upload Document', 'bn': 'নথি আপলোড'},
+    'recent_documents': {'en': 'Recent Family Documents', 'bn': 'সাম্প্রতিক পরিবার নথি'},
     'view_all': {'en': 'View All', 'bn': 'সব দেখুন'},
     'no_documents_yet': {'en': 'No documents yet', 'bn': 'এখনও কোন নথি নেই'},
     'health_tip': {'en': 'Health Tip', 'bn': 'স্বাস্থ্য টিপস'},

@@ -47,13 +47,25 @@ class LandingNavbar extends StatelessWidget {
                   size: 32,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'mySahara',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isScrolled ? AppColors.primary : Colors.white,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'My Sahara',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isScrolled ? AppColors.primary : Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'For You & Your Family',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: (isScrolled ? AppColors.primary : Colors.white).withOpacity(0.8),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

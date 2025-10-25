@@ -70,18 +70,29 @@ class HeroSection extends StatelessWidget {
           isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
         Text(
-          'Your Health,\nYour Records,\nAll in One Place',
+          'পুরো পরিবারের স্বাস্থ্য\nএকজনের হাতে',
           textAlign: isMobile ? TextAlign.center : TextAlign.left,
           style: TextStyle(
-            fontSize: isMobile ? 36 : 56,
+            fontSize: isMobile ? 32 : 48,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            height: 1.3,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Entire Family\'s Health\nin One Hand',
+          textAlign: isMobile ? TextAlign.center : TextAlign.left,
+          style: TextStyle(
+            fontSize: isMobile ? 28 : 42,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.95),
             height: 1.2,
           ),
         ),
         const SizedBox(height: 24),
         Text(
-          'Store, manage, and share your medical documents securely. Track medications, schedule appointments, and keep your family\'s health records organized.',
+          'Manage medical records, track medications, and share health information for your entire family - parents, children, grandparents, everyone.',
           textAlign: isMobile ? TextAlign.center : TextAlign.left,
           style: TextStyle(
             fontSize: isMobile ? 16 : 20,
@@ -111,7 +122,7 @@ class HeroSection extends StatelessWidget {
                 elevation: 8,
               ),
               child: const Text(
-                'Get Started Free',
+                'Protect Your Family',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

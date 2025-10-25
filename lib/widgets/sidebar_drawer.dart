@@ -122,8 +122,8 @@ class SidebarDrawer extends StatelessWidget {
               children: [
                 _DrawerItem(
                   icon: Icons.medication,
-                  title: 'Medication Management',
-                  subtitle: 'Track medications & vaccines',
+                  title: 'Family Medication Tracking',
+                  subtitle: 'Track medications for everyone',
                   onTap: () {
                     Navigator.pop(context);
                     Get.to(() => const MedicationManagementScreen());
@@ -132,8 +132,8 @@ class SidebarDrawer extends StatelessWidget {
                 const Divider(),
                 _DrawerItem(
                   icon: Icons.calendar_month,
-                  title: 'Appointment Management',
-                  subtitle: 'Schedule & track appointments',
+                  title: 'Family Appointments',
+                  subtitle: 'Manage appointments for all members',
                   onTap: () {
                     Navigator.pop(context);
                     Get.to(() => const AppointmentManagementScreen());
@@ -171,14 +171,22 @@ class SidebarDrawer extends StatelessWidget {
               children: [
                 const Divider(),
                 Text(
-                  'mySahara',
+                  'My Sahara',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
-                  '${languageProvider.tr("version")} 1.0.0',
+                  'For You & Your Family',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                    fontSize: 10,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${languageProvider.tr("version")} 1.1.0',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.grey[500],
                   ),

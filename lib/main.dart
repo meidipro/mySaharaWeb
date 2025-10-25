@@ -111,7 +111,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProgressProvider()),
       ],
       child: GetMaterialApp(
-        title: 'mySahara',
+        title: 'My Sahara: For You & Your Family',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,

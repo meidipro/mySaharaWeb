@@ -1,8 +1,8 @@
 name: my_sahara_app
-description: "mySahara - Your Personal Health Record Management System"
+description: "My Sahara: For You & Your Family - Complete Family Health Management"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.9.2
