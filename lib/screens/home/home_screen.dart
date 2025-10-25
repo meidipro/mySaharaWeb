@@ -26,6 +26,9 @@ import '../../widgets/dashboard/upcoming_appointments_widget.dart';
 import '../../widgets/dashboard/quick_family_stats_widget.dart';
 import '../../widgets/dashboard/family_health_activity_widget.dart';
 import '../../widgets/dashboard/family_chronic_diseases_widget.dart';
+import '../../widgets/dashboard/smart_search_bar_widget.dart';
+import '../../widgets/dashboard/family_health_report_widget.dart';
+import '../../widgets/animated_widget_wrapper.dart';
 import '../share/select_history_to_share_screen.dart';
 import '../share/qr_code_scanner_screen.dart';
 
@@ -297,16 +300,32 @@ class _DashboardTab extends StatelessWidget {
               _buildDateCard(context),
               SizedBox(height: isMobile ? 16 : 24),
 
+              // Smart Search Bar (Phase 7)
+              AnimatedWidgetWrapper(
+                delay: StaggeredAnimationHelper.getDelay(0),
+                child: const SmartSearchBarWidget(),
+              ),
+              SizedBox(height: isMobile ? 16 : 24),
+
               // Quick Family Stats (Phase 5)
-              const QuickFamilyStatsWidget(),
+              AnimatedWidgetWrapper(
+                delay: StaggeredAnimationHelper.getDelay(1),
+                child: const QuickFamilyStatsWidget(),
+              ),
               SizedBox(height: isMobile ? 16 : 24),
 
               // Family Health Score Widget (Phase 3)
-              const FamilyHealthScoreWidget(),
+              AnimatedWidgetWrapper(
+                delay: StaggeredAnimationHelper.getDelay(2),
+                child: const FamilyHealthScoreWidget(),
+              ),
               SizedBox(height: isMobile ? 16 : 24),
 
               // Family Members Overview (NEW!)
-              const FamilyMembersOverviewWidget(),
+              AnimatedWidgetWrapper(
+                delay: StaggeredAnimationHelper.getDelay(3),
+                child: const FamilyMembersOverviewWidget(),
+              ),
               SizedBox(height: isMobile ? 16 : 24),
 
               // AI Health Insights (Phase 4)
@@ -327,6 +346,13 @@ class _DashboardTab extends StatelessWidget {
 
               // Health Activity Timeline (Phase 5)
               const FamilyHealthActivityWidget(),
+              SizedBox(height: isMobile ? 16 : 24),
+
+              // Family Health Report (Phase 7)
+              AnimatedWidgetWrapper(
+                delay: StaggeredAnimationHelper.getDelay(8),
+                child: const FamilyHealthReportWidget(),
+              ),
               SizedBox(height: isMobile ? 16 : 24),
 
               // Health Metrics (BMI & BMR)
