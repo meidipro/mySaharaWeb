@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/health_record_provider.dart';
 import '../../providers/family_provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/medical_timeline_provider.dart';
 import '../health_records/health_records_list_screen.dart';
 import '../health_records/add_health_record_screen.dart';
 import '../ai_chat/ai_chat_screen.dart';
@@ -182,6 +183,65 @@ class _DashboardTab extends StatelessWidget {
   final bool showAppBar;
   const _DashboardTab({super.key, this.showAppBar = true});
 
+  Future<void> _refreshDashboard(BuildContext context) async {
+    final healthRecordProvider = context.read<HealthRecordProvider>();
+    final familyProvider = context.read<FamilyProvider>();
+    final timelineProvider = context.read<MedicalTimelineProvider>();
+
+    try {
+      await Future.wait([
+        healthRecordProvider.loadHealthRecords(),
+        familyProvider.loadFamilyMembers(),
+        timelineProvider.loadTimelineEvents(),
+      ]);
+
+      // Show success feedback
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                SizedBox(width: 8),
+                Text('Dashboard refreshed', style: TextStyle(fontWeight: FontWeight.w500)),
+              ],
+            ),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error feedback
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Failed to refresh: ${e.toString()}',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -190,7 +250,10 @@ class _DashboardTab extends StatelessWidget {
     final languageProvider = context.watch<LanguageProvider>();
     final isMobile = ResponsiveBreakpoints.of(context).isMobile;
 
-    return CustomScrollView(
+    return RefreshIndicator(
+      onRefresh: () => _refreshDashboard(context),
+      color: AppColors.primary,
+      child: CustomScrollView(
       slivers: [
         if (showAppBar) // Conditionally render SliverAppBar
           SliverAppBar(
@@ -227,44 +290,44 @@ class _DashboardTab extends StatelessWidget {
 
         // Content
         SliverPadding(
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          padding: EdgeInsets.all(isMobile ? 12 : 24),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // Date card
               _buildDateCard(context),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Quick Family Stats (Phase 5)
               const QuickFamilyStatsWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Family Health Score Widget (Phase 3)
               const FamilyHealthScoreWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Family Members Overview (NEW!)
               const FamilyMembersOverviewWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // AI Health Insights (Phase 4)
               const FamilyHealthInsightsWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Medication Reminders (Phase 4)
               const MedicationRemindersWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Upcoming Appointments (Phase 4)
               const UpcomingAppointmentsWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Chronic Diseases Summary (Phase 5)
               const FamilyChronicDiseasesWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Health Activity Timeline (Phase 5)
               const FamilyHealthActivityWidget(),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Health Metrics (BMI & BMR)
               Consumer<AuthProvider>(
@@ -272,19 +335,19 @@ class _DashboardTab extends StatelessWidget {
                   return _buildHealthMetrics(context, authProvider, languageProvider);
                 },
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Summary cards
               _buildSummaryCards(context, healthRecordProvider, familyProvider, languageProvider, isMobile),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Quick actions
               _buildQuickActions(context, isMobile, languageProvider),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Recent documents
               _buildRecentDocuments(context, healthRecordProvider, languageProvider),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 16 : 24),
 
               // Health tips
               _buildHealthTips(context, languageProvider),
@@ -292,6 +355,7 @@ class _DashboardTab extends StatelessWidget {
           ),
         ),
       ],
+      ),
     );
   }
 
