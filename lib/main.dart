@@ -237,11 +237,43 @@ class _AuthWrapperState extends State<AuthWrapper> {
                 .maybeSingle();
 
             if (retryProfile == null) {
-              debugPrint('Warning: User profile not found even after retry. Trigger may have failed.');
+              debugPrint('Warning: User profile not found. Creating manually...');
+
+              // Create the user profile manually
+              try {
+                // Extract user name from metadata (Google OAuth provides this)
+                final fullName = user.userMetadata?['full_name'] as String? ??
+                    user.userMetadata?['name'] as String? ??
+                    user.email?.split('@').first ??
+                    'User';
+
+                await supabase.from('users').insert({
+                  'id': user.id,
+                  'email': user.email,
+                  'full_name': fullName,
+                  'created_at': DateTime.now().toIso8601String(),
+                  'updated_at': DateTime.now().toIso8601String(),
+                });
+
+                debugPrint('User profile created successfully for ${user.email}');
+              } catch (insertError) {
+                debugPrint('Error inserting user profile: $insertError');
+                // If insert fails, check one more time (race condition)
+                await Future.delayed(const Duration(milliseconds: 500));
+                final finalCheck = await supabase
+                    .from('users')
+                    .select()
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (finalCheck == null) {
+                  debugPrint('CRITICAL: Failed to create user profile. User will not be able to use the app.');
+                }
+              }
             }
           }
         } catch (e) {
-          debugPrint('Error creating user profile: $e');
+          debugPrint('Error in user profile creation flow: $e');
         }
 
         // Load user profile and check if onboarding needed
