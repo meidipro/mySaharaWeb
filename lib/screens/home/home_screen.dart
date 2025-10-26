@@ -363,10 +363,6 @@ class _DashboardTab extends StatelessWidget {
               ),
               SizedBox(height: isMobile ? 16 : 24),
 
-              // Summary cards
-              _buildSummaryCards(context, healthRecordProvider, familyProvider, languageProvider, isMobile),
-              SizedBox(height: isMobile ? 16 : 24),
-
               // Quick actions
               _buildQuickActions(context, isMobile, languageProvider),
               SizedBox(height: isMobile ? 16 : 24),

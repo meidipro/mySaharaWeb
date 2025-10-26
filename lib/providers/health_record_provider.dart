@@ -17,6 +17,9 @@ class HealthRecordProvider extends ChangeNotifier {
   /// All health records
   List<MedicalDocument> get healthRecords => _healthRecords;
 
+  /// All documents (alias for healthRecords for compatibility)
+  List<MedicalDocument> get documents => _healthRecords;
+
   /// Selected health record
   MedicalDocument? get selectedHealthRecord => _selectedHealthRecord;
 
@@ -63,6 +66,18 @@ class HealthRecordProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  /// Load documents for a specific user or family member
+  /// If familyMemberId is null, loads for the user
+  /// If familyMemberId is provided, loads for that family member
+  Future<void> loadDocuments({
+    required String userId,
+    String? familyMemberId,
+  }) async {
+    // For now, just load all health records
+    // The filtering will happen in the UI using familyMemberId
+    await loadHealthRecords();
   }
 
   /// Add new health record

@@ -296,16 +296,15 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Medical Conditions / Diseases
+              // Diseases
               TextFormField(
                 controller: _chronicDiseasesController,
                 decoration: const InputDecoration(
-                  labelText: 'Medical Conditions (Optional)',
+                  labelText: 'Diseases (Optional)',
                   prefixIcon: Icon(Icons.medical_services),
                   border: OutlineInputBorder(),
-                  hintText: 'List any health conditions or diseases, separated by commas',
                 ),
-                maxLines: 3,
+                maxLines: 2,
               ),
               const SizedBox(height: 16),
 

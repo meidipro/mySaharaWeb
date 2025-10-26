@@ -1,6 +1,7 @@
 class Medication {
   final String? id;
   final String userId;
+  final String? familyMemberId; // Links to specific family member
   final String medicationName;
   final String? dosage;
   final String? frequency; // e.g., "twice daily", "3 times daily"
@@ -18,6 +19,7 @@ class Medication {
   Medication({
     this.id,
     required this.userId,
+    this.familyMemberId,
     required this.medicationName,
     this.dosage,
     this.frequency,
@@ -37,6 +39,7 @@ class Medication {
     return Medication(
       id: json['id'] as String?,
       userId: json['user_id'] as String,
+      familyMemberId: json['family_member_id'] as String?,
       medicationName: json['medication_name'] as String,
       dosage: json['dosage'] as String?,
       frequency: json['frequency'] as String?,
@@ -63,6 +66,7 @@ class Medication {
     return {
       if (id != null) 'id': id,
       'user_id': userId,
+      if (familyMemberId != null) 'family_member_id': familyMemberId,
       'medication_name': medicationName,
       'dosage': dosage,
       'frequency': frequency,

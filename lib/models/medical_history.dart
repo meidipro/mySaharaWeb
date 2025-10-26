@@ -1,6 +1,7 @@
 class MedicalHistory {
   final String? id;
   final String userId;
+  final String? familyMemberId; // Links to specific family member
   final DateTime eventDate;
   final String eventType; // diagnosis, treatment, surgery, etc.
   final String? disease;
@@ -18,6 +19,7 @@ class MedicalHistory {
   MedicalHistory({
     this.id,
     required this.userId,
+    this.familyMemberId,
     required this.eventDate,
     required this.eventType,
     this.disease,
@@ -37,6 +39,7 @@ class MedicalHistory {
     return MedicalHistory(
       id: json['id'] as String?,
       userId: json['user_id'] as String,
+      familyMemberId: json['family_member_id'] as String?,
       eventDate: DateTime.parse(json['event_date'] as String),
       eventType: json['event_type'] as String,
       disease: json['disease'] as String?,
@@ -61,6 +64,7 @@ class MedicalHistory {
     return {
       if (id != null) 'id': id,
       'user_id': userId,
+      if (familyMemberId != null) 'family_member_id': familyMemberId,
       'event_date': eventDate.toIso8601String(),
       'event_type': eventType,
       'disease': disease,

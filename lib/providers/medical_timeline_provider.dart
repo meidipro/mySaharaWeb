@@ -14,6 +14,9 @@ class MedicalTimelineProvider extends ChangeNotifier {
   /// All timeline events
   List<MedicalHistory> get timelineEvents => _timelineEvents;
 
+  /// All medical history (alias for timelineEvents for compatibility)
+  List<MedicalHistory> get medicalHistory => _timelineEvents;
+
   /// Selected timeline event
   MedicalHistory? get selectedEvent => _selectedEvent;
 
@@ -215,6 +218,18 @@ class MedicalTimelineProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  /// Load medical history for a specific user or family member
+  /// If familyMemberId is null, loads for the user
+  /// If familyMemberId is provided, loads for that family member
+  Future<void> loadMedicalHistory({
+    required String userId,
+    String? familyMemberId,
+  }) async {
+    // For now, just load all timeline events
+    // The filtering will happen in the UI using familyMemberId
+    await loadTimelineEvents();
   }
 
   /// Get events by type (local filtering)

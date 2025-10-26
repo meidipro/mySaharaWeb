@@ -576,12 +576,12 @@ class FamilyService {
 
       final user = UserProfile.fromJson(userProfile);
 
-      // Check if already exists
+      // Check if already exists (check by relationship 'Me' since is_self column doesn't exist)
       final existing = await _client
           .from('family_members')
           .select()
           .eq('user_id', userId)
-          .eq('is_self', true)
+          .eq('relationship', 'Me')
           .maybeSingle();
 
       if (existing != null) {

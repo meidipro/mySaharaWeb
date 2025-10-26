@@ -12,6 +12,7 @@ enum DocumentType {
 class MedicalDocument {
   final String? id;
   final String userId;
+  final String? familyMemberId; // Links to specific family member
   final String documentType;
   final String title;
   final String? description;
@@ -29,6 +30,7 @@ class MedicalDocument {
   MedicalDocument({
     this.id,
     required this.userId,
+    this.familyMemberId,
     required this.documentType,
     required this.title,
     this.description,
@@ -48,6 +50,7 @@ class MedicalDocument {
     return MedicalDocument(
       id: json['id'] as String?,
       userId: json['user_id'] as String,
+      familyMemberId: json['family_member_id'] as String?,
       documentType: json['document_type'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
@@ -70,6 +73,7 @@ class MedicalDocument {
     return {
       if (id != null) 'id': id,
       'user_id': userId,
+      if (familyMemberId != null) 'family_member_id': familyMemberId,
       'document_type': documentType,
       'title': title,
       'description': description,
