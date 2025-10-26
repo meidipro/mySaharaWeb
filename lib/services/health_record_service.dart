@@ -434,15 +434,43 @@ class HealthRecordService {
 
   /// Get signed URL for viewing a private document
   /// Returns a temporary URL that expires in 1 hour
-  Future<String> getSignedUrl(String filePath) async {
+  /// Handles both full URLs and storage paths
+  Future<String> getSignedUrl(String fileUrl) async {
     try {
+      // If the bucket is public, just return the URL directly
+      if (fileUrl.contains('/object/public/medical-documents/')) {
+        print('DEBUG: Using public URL directly: $fileUrl');
+        return fileUrl;
+      }
+
+      // Extract storage path from URL if needed
+      String filePath;
+      if (fileUrl.contains('/medical-documents/')) {
+        // Extract path from full URL
+        filePath = fileUrl.split('/medical-documents/').last;
+        print('DEBUG: Extracted path from URL: $filePath');
+      } else {
+        // Already a storage path
+        filePath = fileUrl;
+        print('DEBUG: Using storage path directly: $filePath');
+      }
+
+      // Create signed URL for private bucket
       final signedUrl = await _supabase.storage
           .from('medical-documents')
           .createSignedUrl(filePath, 3600); // 1 hour expiry
 
+      print('DEBUG: Created signed URL successfully');
       return signedUrl;
     } catch (e) {
       print('ERROR: Failed to create signed URL: $e');
+
+      // Fallback: Try to use the URL directly if it's already a full URL
+      if (fileUrl.startsWith('http')) {
+        print('DEBUG: Falling back to direct URL: $fileUrl');
+        return fileUrl;
+      }
+
       throw Exception('Failed to get document URL: $e');
     }
   }
