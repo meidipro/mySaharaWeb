@@ -17,6 +17,7 @@ import '../../services/appointment_service.dart';
 import 'add_family_member_screen.dart';
 import '../timeline/add_medical_event_screen.dart';
 import '../health_records/add_health_record_screen.dart';
+import '../health_records/health_record_detail_screen.dart';
 import '../medication/add_medication_screen_simple.dart';
 import '../appointment/add_appointment_screen.dart';
 
@@ -672,8 +673,23 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
               if (event.treatment != null) _buildDetailRow('Treatment', event.treatment!),
               if (event.medications != null) _buildDetailRow('Medications', event.medications!),
               if (event.notes != null) _buildDetailRow('Notes', event.notes!),
-              if (event.documentIds != null && event.documentIds!.isNotEmpty)
-                _buildDetailRow('Attached Documents', '${event.documentIds!.length} document(s)'),
+
+              // Attached Documents Section
+              if (event.documentIds != null && event.documentIds!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                Text(
+                  'Attached Documents (${event.documentIds!.length})',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ..._buildAttachedDocumentsList(event.documentIds!),
+              ],
             ],
           ),
         ),
@@ -731,13 +747,103 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
     );
   }
 
+  List<Widget> _buildAttachedDocumentsList(List<String> documentIds) {
+    final healthRecordProvider = context.read<HealthRecordProvider>();
+    final documents = healthRecordProvider.documents
+        .where((doc) => documentIds.contains(doc.id))
+        .toList();
+
+    if (documents.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            'Documents not found',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ];
+    }
+
+    return documents.map((doc) {
+      return InkWell(
+        onTap: () => _viewDocument(doc),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              // Document thumbnail/icon
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  _getDocumentIcon(doc.documentType),
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      doc.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      doc.documentType,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  void _viewDocument(MedicalDocument document) {
+    Get.to(() => HealthRecordDetailScreen(document: document));
+  }
+
   Widget _buildDocumentCard(MedicalDocument doc) {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          // TODO: Show document details
-        },
+        onTap: () => _viewDocument(doc),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
