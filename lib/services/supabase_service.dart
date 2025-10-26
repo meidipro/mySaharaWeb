@@ -46,6 +46,19 @@ class SupabaseService {
   }
 
   static Future<void> signOut() async {
+    // Sign out from Google Sign-In first (clears cached account)
+    try {
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+        await googleSignIn.disconnect(); // Fully disconnect to clear cache
+      }
+    } catch (e) {
+      print('Google Sign-Out error: $e');
+      // Continue with Supabase sign out even if Google sign out fails
+    }
+
+    // Then sign out from Supabase
     await client.auth.signOut();
   }
 
@@ -68,6 +81,9 @@ class SupabaseService {
       await client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: redirectUrl,
+        queryParams: {
+          'prompt': 'select_account', // Force account selection every time
+        },
       );
       return true;
     } catch (e) {
