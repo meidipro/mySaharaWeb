@@ -73,7 +73,7 @@ class FamilyMember {
       if (allergies != null) 'allergies': allergies,
       if (notes != null) 'notes': notes,
       if (profileImageUrl != null) 'profile_image_url': profileImageUrl,
-      'is_self': isSelf,
+      // 'is_self': isSelf, // Removed - column doesn't exist in database
       'created_at': createdAt.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
     };
