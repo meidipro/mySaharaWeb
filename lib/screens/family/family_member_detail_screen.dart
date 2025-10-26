@@ -641,9 +641,11 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
   }
 
   void _showMedicalHistoryDetails(MedicalHistory event) {
+    final healthRecordProvider = context.read<HealthRecordProvider>();
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             Expanded(
@@ -654,7 +656,7 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
             ),
             IconButton(
               icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
             ),
           ],
         ),
@@ -688,19 +690,19 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
-                ..._buildAttachedDocumentsList(event.documentIds!),
+                ..._buildAttachedDocumentsList(event.documentIds!, healthRecordProvider),
               ],
             ],
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Close'),
           ),
           ElevatedButton.icon(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final result = await Get.to(() => AddMedicalEventScreen(
                 event: event,
                 familyMemberId: widget.memberId,
@@ -747,8 +749,7 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
     );
   }
 
-  List<Widget> _buildAttachedDocumentsList(List<String> documentIds) {
-    final healthRecordProvider = context.read<HealthRecordProvider>();
+  List<Widget> _buildAttachedDocumentsList(List<String> documentIds, HealthRecordProvider healthRecordProvider) {
     final documents = healthRecordProvider.documents
         .where((doc) => documentIds.contains(doc.id))
         .toList();
