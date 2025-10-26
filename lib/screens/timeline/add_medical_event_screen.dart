@@ -15,10 +15,14 @@ import '../health_records/add_health_record_screen.dart';
 /// Screen for adding new medical timeline events
 class AddMedicalEventScreen extends StatefulWidget {
   final MedicalHistory? event; // For editing existing event
+  final String? familyMemberId; // Optional: for family member's medical history
+  final String? familyMemberName; // Optional: for display
 
   const AddMedicalEventScreen({
     super.key,
     this.event,
+    this.familyMemberId,
+    this.familyMemberName,
   });
 
   @override
@@ -136,6 +140,7 @@ class _AddMedicalEventScreenState extends State<AddMedicalEventScreen> {
       final event = MedicalHistory(
         id: widget.event?.id,
         userId: '', // Will be set by the service
+        familyMemberId: widget.familyMemberId, // Include family member ID if provided
         eventType: _selectedEventType,
         eventDate: _selectedDate,
         disease: _diseaseController.text.trim().isEmpty

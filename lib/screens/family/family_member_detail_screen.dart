@@ -13,6 +13,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/medical_timeline_provider.dart';
 import '../../providers/health_record_provider.dart';
 import 'add_family_member_screen.dart';
+import '../timeline/add_medical_event_screen.dart';
+import '../health_records/add_health_record_screen.dart';
+import '../medication/add_medication_screen.dart';
+import '../appointment/add_appointment_screen.dart';
 
 class FamilyMemberDetailScreen extends StatefulWidget {
   final String memberId;
@@ -741,44 +745,52 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
     );
   }
 
-  void _addMedicalHistory(FamilyMember member) {
-    Get.snackbar(
-      'Coming Soon',
-      'Add medical history functionality will be implemented',
-      backgroundColor: AppColors.info,
-      colorText: AppColors.textWhite,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  void _addMedicalHistory(FamilyMember member) async {
+    final result = await Get.to(() => AddMedicalEventScreen(
+      familyMemberId: widget.memberId,
+      familyMemberName: member.fullName,
+    ));
+
+    if (result == true) {
+      // Reload medical history
+      _loadFamilyMemberData();
+    }
   }
 
-  void _uploadDocument(FamilyMember member) {
-    Get.snackbar(
-      'Coming Soon',
-      'Document upload functionality will be implemented',
-      backgroundColor: AppColors.info,
-      colorText: AppColors.textWhite,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  void _uploadDocument(FamilyMember member) async {
+    final result = await Get.to(() => AddHealthRecordScreen(
+      familyMemberId: widget.memberId,
+      familyMemberName: member.fullName,
+    ));
+
+    if (result == true) {
+      // Reload documents
+      _loadFamilyMemberData();
+    }
   }
 
-  void _addMedication(FamilyMember member) {
-    Get.snackbar(
-      'Coming Soon',
-      'Add medication functionality will be implemented',
-      backgroundColor: AppColors.info,
-      colorText: AppColors.textWhite,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  void _addMedication(FamilyMember member) async {
+    final result = await Get.to(() => AddMedicationScreen(
+      familyMemberId: widget.memberId,
+      familyMemberName: member.fullName,
+    ));
+
+    if (result == true) {
+      // Reload data
+      _loadFamilyMemberData();
+    }
   }
 
-  void _addAppointment(FamilyMember member) {
-    Get.snackbar(
-      'Coming Soon',
-      'Add appointment functionality will be implemented',
-      backgroundColor: AppColors.info,
-      colorText: AppColors.textWhite,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  void _addAppointment(FamilyMember member) async {
+    final result = await Get.to(() => AddAppointmentScreen(
+      familyMemberId: widget.memberId,
+      familyMemberName: member.fullName,
+    ));
+
+    if (result == true) {
+      // Reload data
+      _loadFamilyMemberData();
+    }
   }
 
   void _confirmDelete(BuildContext context) {

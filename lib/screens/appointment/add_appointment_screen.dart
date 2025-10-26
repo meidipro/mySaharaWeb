@@ -11,8 +11,15 @@ import 'package:url_launcher/url_launcher.dart';
 /// Add Appointment Screen - Form to add new appointment
 class AddAppointmentScreen extends StatefulWidget {
   final Map<String, dynamic>? existingAppointment;
+  final String? familyMemberId; // Optional: for family member's appointments
+  final String? familyMemberName; // Optional: for display
 
-  const AddAppointmentScreen({super.key, this.existingAppointment});
+  const AddAppointmentScreen({
+    super.key,
+    this.existingAppointment,
+    this.familyMemberId,
+    this.familyMemberName,
+  });
 
   @override
   State<AddAppointmentScreen> createState() => _AddAppointmentScreenState();
@@ -152,6 +159,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
       // Add new appointment
       result = await _appointmentService.addAppointment(
         userId: user.id,
+        familyMemberId: widget.familyMemberId, // Include family member ID if provided
         doctorName: _doctorNameController.text.trim(),
         specialty: _specialtyController.text.trim().isEmpty
             ? null

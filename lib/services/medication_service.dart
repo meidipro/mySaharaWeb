@@ -23,12 +23,15 @@ class MedicationService {
   /// Add new medication (SIMPLIFIED)
   Future<String?> addMedication({
     required String userId,
+    String? familyMemberId, // Optional: for family member's medications
     required String name,
+    String? genericName,
+    String? brandName,
     required String form,
     required double dosageAmount,
     required String dosageUnit,
-    required int frequencyPerDay,
-    required List<String> timing, // ['morning', 'afternoon', 'evening', 'night']
+    int frequencyPerDay = 1,
+    List<String> timing = const [], // ['morning', 'afternoon', 'evening', 'night']
     List<String>? reminderTimes, // ['08:00', '14:00', '20:00']
     bool takeWithFood = false,
     bool takeOnEmptyStomach = false,
@@ -37,14 +40,19 @@ class MedicationService {
     DateTime? startDate,
     DateTime? endDate,
     bool isOngoing = true,
-    int? totalQuantity,
+    double? totalQuantity,
+    double? remainingQuantity,
+    String? prescribingDoctor,
     String? instructions,
     String? notes,
   }) async {
     try {
       final response = await _supabase.from('medications').insert({
         'user_id': userId,
+        if (familyMemberId != null) 'family_member_id': familyMemberId,
         'name': name,
+        if (genericName != null) 'generic_name': genericName,
+        if (brandName != null) 'brand_name': brandName,
         'form': form,
         'dosage_amount': dosageAmount,
         'dosage_unit': dosageUnit,
@@ -59,7 +67,8 @@ class MedicationService {
         'end_date': endDate?.toIso8601String().split('T')[0],
         'is_ongoing': isOngoing,
         'total_quantity': totalQuantity,
-        'quantity_remaining': totalQuantity,
+        'quantity_remaining': remainingQuantity ?? totalQuantity,
+        if (prescribingDoctor != null) 'prescribing_doctor': prescribingDoctor,
         'instructions': instructions,
         'notes': notes,
       }).select('id').single();

@@ -110,7 +110,7 @@ class _AddMedicationScreenSimpleState extends State<AddMedicationScreenSimple> {
       isOngoing: _isOngoing,
       totalQuantity: _quantityController.text.isEmpty
           ? null
-          : int.parse(_quantityController.text),
+          : double.parse(_quantityController.text),
       instructions: _instructionsController.text.isEmpty
           ? null
           : _instructionsController.text.trim(),

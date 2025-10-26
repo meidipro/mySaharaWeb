@@ -8,8 +8,15 @@ import '../../services/medication_service.dart';
 /// Add Medication Screen with comprehensive form
 class AddMedicationScreen extends StatefulWidget {
   final Map<String, dynamic>? medication; // For editing existing medication
+  final String? familyMemberId; // Optional: for family member's medications
+  final String? familyMemberName; // Optional: for display
 
-  const AddMedicationScreen({super.key, this.medication});
+  const AddMedicationScreen({
+    super.key,
+    this.medication,
+    this.familyMemberId,
+    this.familyMemberName,
+  });
 
   @override
   State<AddMedicationScreen> createState() => _AddMedicationScreenState();
@@ -120,6 +127,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
     final result = await _medicationService.addMedication(
       userId: user.id,
+      familyMemberId: widget.familyMemberId, // Include family member ID if provided
       name: _nameController.text.trim(),
       genericName: _genericNameController.text.trim().isEmpty
           ? null

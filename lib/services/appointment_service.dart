@@ -109,6 +109,7 @@ class AppointmentService {
   /// Add new appointment
   Future<String?> addAppointment({
     required String userId,
+    String? familyMemberId, // Optional: for family member's appointments
     required String doctorName,
     String? specialty,
     required DateTime appointmentDate,
@@ -125,6 +126,7 @@ class AppointmentService {
     try {
       final response = await _supabase.from('appointments').insert({
         'user_id': userId,
+        if (familyMemberId != null) 'family_member_id': familyMemberId,
         'doctor_name': doctorName,
         'specialty': specialty,
         'appointment_date': appointmentDate.toIso8601String(),

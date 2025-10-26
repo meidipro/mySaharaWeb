@@ -15,7 +15,14 @@ import '../../providers/health_record_provider.dart';
 
 /// Screen for adding new health records
 class AddHealthRecordScreen extends StatefulWidget {
-  const AddHealthRecordScreen({super.key});
+  final String? familyMemberId; // Optional: for family member's documents
+  final String? familyMemberName; // Optional: for display
+
+  const AddHealthRecordScreen({
+    super.key,
+    this.familyMemberId,
+    this.familyMemberName,
+  });
 
   @override
   State<AddHealthRecordScreen> createState() => _AddHealthRecordScreenState();
@@ -244,6 +251,7 @@ class _AddHealthRecordScreenState extends State<AddHealthRecordScreen> {
 
       final document = MedicalDocument(
         userId: '', // Will be set by the service
+        familyMemberId: widget.familyMemberId, // Include family member ID if provided
         documentType: _selectedDocumentType,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
