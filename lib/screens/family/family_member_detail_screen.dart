@@ -17,7 +17,7 @@ import '../../services/appointment_service.dart';
 import 'add_family_member_screen.dart';
 import '../timeline/add_medical_event_screen.dart';
 import '../health_records/add_health_record_screen.dart';
-import '../medication/add_medication_screen.dart';
+import '../medication/add_medication_screen_simple.dart';
 import '../appointment/add_appointment_screen.dart';
 
 class FamilyMemberDetailScreen extends StatefulWidget {
@@ -603,6 +603,7 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        onTap: () => _showMedicalHistoryDetails(event),
         leading: CircleAvatar(
           backgroundColor: AppColors.primary.withOpacity(0.1),
           child: const Icon(Icons.medical_services, color: AppColors.primary),
@@ -634,6 +635,98 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
             if (result == true) _loadFamilyMemberData();
           },
         ),
+      ),
+    );
+  }
+
+  void _showMedicalHistoryDetails(MedicalHistory event) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                event.disease ?? event.eventType,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDetailRow('Event Type', event.eventType),
+              _buildDetailRow('Date', DateFormat('MMMM dd, yyyy').format(event.eventDate)),
+              if (event.disease != null) _buildDetailRow('Disease/Condition', event.disease!),
+              if (event.symptoms != null) _buildDetailRow('Symptoms', event.symptoms!),
+              if (event.doctorName != null) _buildDetailRow('Doctor', 'Dr. ${event.doctorName}'),
+              if (event.doctorSpecialty != null) _buildDetailRow('Specialty', event.doctorSpecialty!),
+              if (event.hospital != null) _buildDetailRow('Hospital', event.hospital!),
+              if (event.treatment != null) _buildDetailRow('Treatment', event.treatment!),
+              if (event.medications != null) _buildDetailRow('Medications', event.medications!),
+              if (event.notes != null) _buildDetailRow('Notes', event.notes!),
+              if (event.documentIds != null && event.documentIds!.isNotEmpty)
+                _buildDetailRow('Attached Documents', '${event.documentIds!.length} document(s)'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(context);
+              final result = await Get.to(() => AddMedicalEventScreen(
+                event: event,
+                familyMemberId: widget.memberId,
+                familyMemberName: widget.memberProfile?.member.fullName,
+              ));
+              if (result == true) _loadFamilyMemberData();
+            },
+            icon: const Icon(Icons.edit),
+            label: const Text('Edit'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -901,7 +994,7 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
   }
 
   void _addMedication(FamilyMember member) async {
-    final result = await Get.to(() => AddMedicationScreen(
+    final result = await Get.to(() => AddMedicationScreenSimple(
       familyMemberId: widget.memberId,
       familyMemberName: member.fullName,
     ));

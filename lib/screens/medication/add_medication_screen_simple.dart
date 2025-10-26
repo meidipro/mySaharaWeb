@@ -8,7 +8,14 @@ import '../../services/medication_notification_service.dart';
 
 /// Simplified Add Medication Screen
 class AddMedicationScreenSimple extends StatefulWidget {
-  const AddMedicationScreenSimple({super.key});
+  final String? familyMemberId;
+  final String? familyMemberName;
+
+  const AddMedicationScreenSimple({
+    super.key,
+    this.familyMemberId,
+    this.familyMemberName,
+  });
 
   @override
   State<AddMedicationScreenSimple> createState() => _AddMedicationScreenSimpleState();
@@ -95,6 +102,7 @@ class _AddMedicationScreenSimpleState extends State<AddMedicationScreenSimple> {
 
     final result = await _medicationService.addMedication(
       userId: user.id,
+      familyMemberId: widget.familyMemberId,
       name: _nameController.text.trim(),
       form: _form,
       dosageAmount: dosageAmount,

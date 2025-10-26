@@ -474,7 +474,10 @@ class _AddMedicalEventScreenState extends State<AddMedicalEventScreen> {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () async {
-                  final result = await Get.to(() => const AddHealthRecordScreen());
+                  final result = await Get.to(() => AddHealthRecordScreen(
+                    familyMemberId: widget.familyMemberId,
+                    familyMemberName: widget.familyMemberName,
+                  ));
                   // If a document was uploaded, automatically attach it
                   if (result != null && mounted) {
                     await context.read<HealthRecordProvider>().loadHealthRecords();
