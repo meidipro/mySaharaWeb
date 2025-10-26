@@ -211,32 +211,6 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
-
-            // Generic Name (Optional)
-            TextFormField(
-              controller: _genericNameController,
-              decoration: InputDecoration(
-                labelText: 'Generic Name',
-                hintText: 'e.g., Acetaminophen',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Brand Name (Optional)
-            TextFormField(
-              controller: _brandNameController,
-              decoration: InputDecoration(
-                labelText: 'Brand Name',
-                hintText: 'e.g., Napa, Ace',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
             const SizedBox(height: 24),
 
             // Dosage Section

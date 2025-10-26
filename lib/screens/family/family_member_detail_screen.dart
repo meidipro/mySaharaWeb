@@ -12,6 +12,8 @@ import '../../providers/family_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/medical_timeline_provider.dart';
 import '../../providers/health_record_provider.dart';
+import '../../services/medication_service.dart';
+import '../../services/appointment_service.dart';
 import 'add_family_member_screen.dart';
 import '../timeline/add_medical_event_screen.dart';
 import '../health_records/add_health_record_screen.dart';
@@ -35,11 +37,21 @@ class FamilyMemberDetailScreen extends StatefulWidget {
 class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final MedicationService _medicationService = MedicationService();
+  final AppointmentService _appointmentService = AppointmentService();
+
+  List<Map<String, dynamic>> _medications = [];
+  List<Map<String, dynamic>> _appointments = [];
+  bool _isLoadingMedications = false;
+  bool _isLoadingAppointments = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _tabController.addListener(() {
+      setState(() {}); // Rebuild to update FAB
+    });
     _loadFamilyMemberData();
   }
 
@@ -65,6 +77,22 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
         userId: authProvider.user!.id,
         familyMemberId: widget.memberId,
       );
+
+      // Load medications
+      setState(() => _isLoadingMedications = true);
+      final allMedications = await _medicationService.getMedications(authProvider.user!.id);
+      setState(() {
+        _medications = allMedications.where((m) => m['family_member_id'] == widget.memberId).toList();
+        _isLoadingMedications = false;
+      });
+
+      // Load appointments
+      setState(() => _isLoadingAppointments = true);
+      final allAppointments = await _appointmentService.getAppointments(authProvider.user!.id);
+      setState(() {
+        _appointments = allAppointments.where((a) => a['family_member_id'] == widget.memberId).toList();
+        _isLoadingAppointments = false;
+      });
     }
   }
 
@@ -119,7 +147,45 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
                 _buildAppointmentsTab(member),
               ],
             ),
+      floatingActionButton: member != null && _tabController.index > 0
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                switch (_tabController.index) {
+                  case 1: // History
+                    _addMedicalHistory(member);
+                    break;
+                  case 2: // Documents
+                    _uploadDocument(member);
+                    break;
+                  case 3: // Medications
+                    _addMedication(member);
+                    break;
+                  case 4: // Appointments
+                    _addAppointment(member);
+                    break;
+                }
+              },
+              backgroundColor: AppColors.primary,
+              icon: const Icon(Icons.add),
+              label: Text(_getTabActionLabel()),
+            )
+          : null,
     );
+  }
+
+  String _getTabActionLabel() {
+    switch (_tabController.index) {
+      case 1:
+        return 'Add Event';
+      case 2:
+        return 'Upload Doc';
+      case 3:
+        return 'Add Medication';
+      case 4:
+        return 'Add Appointment';
+      default:
+        return 'Add';
+    }
   }
 
   // TAB 1: Overview
@@ -363,75 +429,103 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
 
   // TAB 4: Medications
   Widget _buildMedicationsTab(FamilyMember member) {
-    // TODO: Implement medication provider and filtering
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.medication, size: 80, color: AppColors.textSecondary.withOpacity(0.5)),
-          const SizedBox(height: 16),
-          Text(
-            'No medications yet',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Add medications to track their prescriptions',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => _addMedication(member),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Medication'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textWhite,
+    if (_isLoadingMedications) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_medications.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.medication, size: 80, color: AppColors.textSecondary.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text(
+              'No medications yet',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(height: 8),
+            Text(
+              'Add medications to track their prescriptions',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => _addMedication(member),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Medication'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textWhite,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _medications.length,
+      itemBuilder: (context, index) {
+        final med = _medications[index];
+        return _buildMedicationCard(med);
+      },
     );
   }
 
   // TAB 5: Appointments
   Widget _buildAppointmentsTab(FamilyMember member) {
-    // TODO: Implement appointment provider and filtering
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.event, size: 80, color: AppColors.textSecondary.withOpacity(0.5)),
-          const SizedBox(height: 16),
-          Text(
-            'No appointments yet',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Schedule appointments to manage their healthcare',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => _addAppointment(member),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Appointment'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textWhite,
+    if (_isLoadingAppointments) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_appointments.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event, size: 80, color: AppColors.textSecondary.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text(
+              'No appointments yet',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(height: 8),
+            Text(
+              'Schedule appointments to manage their healthcare',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => _addAppointment(member),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Appointment'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textWhite,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _appointments.length,
+      itemBuilder: (context, index) {
+        final apt = _appointments[index];
+        return _buildAppointmentCard(apt);
+      },
     );
   }
 
@@ -444,29 +538,59 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
         final docCount = healthRecordProvider.documents
             .where((d) => d.familyMemberId == widget.memberId)
             .length;
+        final medicationCount = _medications.length;
+        final appointmentCount = _appointments.length;
 
         return Container(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  icon: Icons.timeline,
-                  label: 'History Events',
-                  value: '$historyCount',
-                  color: AppColors.healthGreen,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.timeline,
+                      label: 'History Events',
+                      value: '$historyCount',
+                      color: AppColors.healthGreen,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.folder,
+                      label: 'Documents',
+                      value: '$docCount',
+                      color: AppColors.healthBlue,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  icon: Icons.folder,
-                  label: 'Documents',
-                  value: '$docCount',
-                  color: AppColors.healthBlue,
-                ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.medication,
+                      label: 'Medications',
+                      value: '$medicationCount',
+                      color: AppColors.healthOrange,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.event,
+                      label: 'Appointments',
+                      value: '$appointmentCount',
+                      color: AppColors.healthPurple,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -499,10 +623,17 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
           ],
         ),
         isThreeLine: true,
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          // TODO: Show medical history details
-        },
+        trailing: IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () async {
+            final result = await Get.to(() => AddMedicalEventScreen(
+              event: event,
+              familyMemberId: widget.memberId,
+              familyMemberName: widget.memberProfile?.member.fullName,
+            ));
+            if (result == true) _loadFamilyMemberData();
+          },
+        ),
       ),
     );
   }
@@ -847,6 +978,112 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMedicationCard(Map<String, dynamic> med) {
+    final isOngoing = med['is_ongoing'] ?? true;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: AppColors.healthOrange.withOpacity(0.1),
+          child: const Icon(Icons.medication, color: AppColors.healthOrange),
+        ),
+        title: Text(
+          med['name'] ?? 'Medication',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text('${med['dosage_amount']} ${med['dosage_unit']} - ${med['form']}'),
+            if (!isOngoing && med['end_date'] != null) ...[
+              const SizedBox(height: 2),
+              Text('Until ${DateFormat('MMM dd, yyyy').format(DateTime.parse(med['end_date']))}'),
+            ],
+          ],
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isOngoing ? AppColors.success.withOpacity(0.1) : AppColors.textSecondary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            isOngoing ? 'Ongoing' : 'Completed',
+            style: TextStyle(
+              fontSize: 12,
+              color: isOngoing ? AppColors.success : AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        isThreeLine: true,
+      ),
+    );
+  }
+
+  Widget _buildAppointmentCard(Map<String, dynamic> apt) {
+    final aptDate = DateTime.parse(apt['appointment_date']);
+    final isPast = aptDate.isBefore(DateTime.now());
+    final status = apt['status'] ?? 'scheduled';
+
+    Color statusColor;
+    switch (status) {
+      case 'completed':
+        statusColor = AppColors.success;
+        break;
+      case 'cancelled':
+        statusColor = AppColors.error;
+        break;
+      case 'missed':
+        statusColor = AppColors.warning;
+        break;
+      default:
+        statusColor = AppColors.healthPurple;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: statusColor.withOpacity(0.1),
+          child: Icon(Icons.event, color: statusColor),
+        ),
+        title: Text(
+          apt['doctor_name'] ?? 'Appointment',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(DateFormat('MMM dd, yyyy - hh:mm a').format(aptDate)),
+            if (apt['specialty'] != null) ...[
+              const SizedBox(height: 2),
+              Text(apt['specialty']),
+            ],
+          ],
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            status.substring(0, 1).toUpperCase() + status.substring(1),
+            style: TextStyle(
+              fontSize: 12,
+              color: statusColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        isThreeLine: true,
       ),
     );
   }
