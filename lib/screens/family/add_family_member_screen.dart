@@ -7,6 +7,7 @@ import '../../constants/app_colors.dart';
 import '../../models/family_member.dart';
 import '../../providers/family_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/chronic_disease_detector.dart';
 
 class AddFamilyMemberScreen extends StatefulWidget {
   final FamilyMember? member; // For editing existing member
@@ -31,6 +32,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
   String? _selectedBloodGroup;
   DateTime? _selectedDate;
   bool _isLoading = false;
+  DiseaseAnalysisResult? _diseaseAnalysis;
 
   final List<String> _relationships = [
     'Father',
@@ -68,9 +70,21 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Add listener for real-time disease detection
+    _chronicDiseasesController.addListener(_analyzeDiseases);
+
     if (widget.member != null) {
       _loadExistingMemberData();
     }
+  }
+
+  /// Analyze diseases in real-time as user types
+  void _analyzeDiseases() {
+    final text = _chronicDiseasesController.text;
+    setState(() {
+      _diseaseAnalysis = ChronicDiseaseDetector.analyzeDiseasesString(text);
+    });
   }
 
   void _loadExistingMemberData() {
@@ -301,11 +315,134 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                 controller: _chronicDiseasesController,
                 decoration: const InputDecoration(
                   labelText: 'Diseases (Optional)',
+                  hintText: 'Enter diseases separated by commas',
+                  helperText: 'e.g., Diabetes, Hypertension, Asthma',
                   prefixIcon: Icon(Icons.medical_services),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 2,
               ),
+
+              // Disease Detection Results
+              if (_diseaseAnalysis != null && _diseaseAnalysis!.totalCount > 0) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _diseaseAnalysis!.hasChronicDiseases
+                        ? AppColors.error.withOpacity(0.1)
+                        : AppColors.success.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _diseaseAnalysis!.hasChronicDiseases
+                          ? AppColors.error.withOpacity(0.3)
+                          : AppColors.success.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Summary
+                      Row(
+                        children: [
+                          Icon(
+                            _diseaseAnalysis!.hasChronicDiseases
+                                ? Icons.warning_amber_rounded
+                                : Icons.check_circle,
+                            color: _diseaseAnalysis!.hasChronicDiseases
+                                ? AppColors.error
+                                : AppColors.success,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              ChronicDiseaseDetector.getSummaryMessage(_diseaseAnalysis!),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: _diseaseAnalysis!.hasChronicDiseases
+                                    ? AppColors.error
+                                    : AppColors.success,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Chronic Diseases
+                      if (_diseaseAnalysis!.chronicDiseases.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Chronic Conditions:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: _diseaseAnalysis!.chronicDiseases.map((disease) {
+                            return Chip(
+                              avatar: CircleAvatar(
+                                backgroundColor: AppColors.error,
+                                child: Icon(Icons.medical_services, size: 14, color: Colors.white),
+                              ),
+                              label: Text(disease),
+                              backgroundColor: AppColors.error.withOpacity(0.15),
+                              labelStyle: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.error,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            );
+                          }).toList(),
+                        ),
+                      ],
+
+                      // Acute Diseases
+                      if (_diseaseAnalysis!.acuteDiseases.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Acute/Temporary Conditions:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: _diseaseAnalysis!.acuteDiseases.map((disease) {
+                            return Chip(
+                              avatar: CircleAvatar(
+                                backgroundColor: AppColors.success,
+                                child: Icon(Icons.check, size: 14, color: Colors.white),
+                              ),
+                              label: Text(disease),
+                              backgroundColor: AppColors.success.withOpacity(0.15),
+                              labelStyle: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.success,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
 
               // Medications

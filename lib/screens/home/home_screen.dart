@@ -15,7 +15,12 @@ import '../health_records/health_records_list_screen.dart';
 import '../health_records/add_health_record_screen.dart';
 import '../ai_chat/ai_chat_screen.dart';
 import '../timeline/medical_timeline_screen.dart';
+import '../timeline/add_medical_event_screen.dart';
+import '../medical/my_medical_history_screen.dart';
+import '../medical/share_medical_history_screen.dart';
 import '../family/family_dashboard_screen.dart';
+import '../family/add_family_member_screen.dart';
+import '../family/add_family_member_via_code_screen.dart';
 import '../profile/health_calculator_screen.dart';
 import '../../widgets/sidebar_drawer.dart';
 import '../../widgets/dashboard/family_members_overview_widget.dart';
@@ -70,6 +75,80 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Show quick actions sheet
+  void _showQuickActionsSheet(BuildContext context, LanguageProvider languageProvider) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Quick Actions',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.upload_file, color: AppColors.primary),
+              ),
+              title: const Text('Upload Document'),
+              subtitle: const Text('Add medical record or prescription'),
+              onTap: () {
+                Navigator.pop(context);
+                Get.to(() => const AddHealthRecordScreen());
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.person_add, color: AppColors.success),
+              ),
+              title: const Text('Add Family Member'),
+              subtitle: const Text('Add someone to your family circle'),
+              onTap: () {
+                Navigator.pop(context);
+                Get.to(() => AddFamilyMemberScreen());
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.qr_code_scanner, color: AppColors.info),
+              ),
+              title: const Text('Scan QR Code'),
+              subtitle: const Text('Connect via family code'),
+              onTap: () {
+                Navigator.pop(context);
+                Get.to(() => AddFamilyMemberViaCodeScreen());
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveBreakpoints.of(context).isMobile;
@@ -80,13 +159,14 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: const SidebarDrawer(),
       body: _buildBody(isMobile),
       bottomNavigationBar: isMobile ? _buildBottomNavigationBar() : null,
-      floatingActionButton: _selectedIndex == 1
+      floatingActionButton: _selectedIndex == 3
           ? FloatingActionButton.extended(
               onPressed: () {
-                Get.to(() => const AddHealthRecordScreen());
+                // Family tab - add family member
+                Get.to(() => AddFamilyMemberScreen());
               },
               icon: const Icon(Icons.add),
-              label: Text(languageProvider.tr('add_record')),
+              label: Text(languageProvider.tr('add_member') ?? 'Add Member'),
             )
           : null,
     );
@@ -96,25 +176,57 @@ class _HomeScreenState extends State<HomeScreen> {
   PreferredSizeWidget _buildTopNavigationBar(LanguageProvider languageProvider) {
     final navigationItems = [
       {'label': languageProvider.tr('home'), 'index': 0},
-      {'label': languageProvider.tr('records'), 'index': 1},
-      {'label': languageProvider.tr('medical_history'), 'index': 2},
+      {'label': 'My Medical', 'index': 1},
+      {'label': 'Share', 'index': 2},
       {'label': languageProvider.tr('family'), 'index': 3},
       {'label': languageProvider.tr('ai_assistant'), 'index': 4},
     ];
 
     return AppBar(
       title: Row(
-        children: navigationItems.map((item) {
-          return TextButton(
-            onPressed: () => _onItemTapped(item['index'] as int),
-            style: TextButton.styleFrom(
-              foregroundColor: _selectedIndex == (item['index'] as int)
-                  ? AppColors.textWhite
-                  : AppColors.textWhite.withOpacity(0.7),
-            ),
-            child: Text(item['label'] as String),
-          );
-        }).toList(),
+        children: [
+          // User greeting
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, _) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      languageProvider.tr('welcome_back'),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textWhite.withOpacity(0.9),
+                            fontSize: 12,
+                          ),
+                    ),
+                    Text(
+                      authProvider.user?.fullName ?? languageProvider.tr('user'),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppColors.textWhite,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+          // Navigation items
+          ...navigationItems.map((item) {
+            return TextButton(
+              onPressed: () => _onItemTapped(item['index'] as int),
+              style: TextButton.styleFrom(
+                foregroundColor: _selectedIndex == (item['index'] as int)
+                    ? AppColors.textWhite
+                    : AppColors.textWhite.withOpacity(0.7),
+              ),
+              child: Text(item['label'] as String),
+            );
+          }).toList(),
+        ],
       ),
       actions: [
         IconButton(
@@ -135,15 +247,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Build the body content based on selected tab
+  /// Build the body content based on selected tab (UPDATED: 5 tabs)
   Widget _buildBody(bool isMobile) {
     switch (_selectedIndex) {
       case 0:
         return _DashboardTab(showAppBar: isMobile);
       case 1:
-        return const HealthRecordsListScreen();
+        return const MyMedicalHistoryScreen();
       case 2:
-        return const MedicalTimelineScreen();
+        return const ShareMedicalHistoryScreen();
       case 3:
         return const FamilyDashboardScreen();
       case 4:
@@ -153,16 +265,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Build bottom navigation bar
+  /// Build bottom navigation bar (UPDATED: 5 tabs)
   Widget _buildBottomNavigationBar() {
     final languageProvider = context.watch<LanguageProvider>();
 
     final navigationItems = [
       {'icon': Icons.home_outlined, 'selectedIcon': Icons.home, 'label': languageProvider.tr('home')},
-      {'icon': Icons.folder_outlined, 'selectedIcon': Icons.folder, 'label': languageProvider.tr('records')},
-      {'icon': Icons.history_outlined, 'selectedIcon': Icons.history, 'label': languageProvider.tr('medical_history')},
+      {'icon': Icons.medical_services_outlined, 'selectedIcon': Icons.medical_services, 'label': 'My Medical'},
+      {'icon': Icons.share_outlined, 'selectedIcon': Icons.share, 'label': 'Share'},
       {'icon': Icons.people_outline, 'selectedIcon': Icons.people, 'label': languageProvider.tr('family')},
-      {'icon': Icons.medical_services_outlined, 'selectedIcon': Icons.medical_services, 'label': languageProvider.tr('ai_assistant')},
+      {'icon': Icons.psychology_outlined, 'selectedIcon': Icons.psychology, 'label': languageProvider.tr('ai_assistant')},
     ];
 
     return NavigationBar(
@@ -297,82 +409,83 @@ class _DashboardTab extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // Date card
-              _buildDateCard(context),
-              SizedBox(height: isMobile ? 16 : 24),
+              // Date Card - REMOVED (shown in app bar)
+              // _buildDateCard(context),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Smart Search Bar (Phase 7)
+              // Smart Search Bar (Phase 7) - KEEP
               AnimatedWidgetWrapper(
                 delay: StaggeredAnimationHelper.getDelay(0),
                 child: const SmartSearchBarWidget(),
               ),
               SizedBox(height: isMobile ? 16 : 24),
 
-              // Quick Family Stats (Phase 5)
+              // Quick Family Stats (Phase 5) - KEEP
               AnimatedWidgetWrapper(
                 delay: StaggeredAnimationHelper.getDelay(1),
                 child: const QuickFamilyStatsWidget(),
               ),
               SizedBox(height: isMobile ? 16 : 24),
 
-              // Family Health Score Widget (Phase 3)
-              AnimatedWidgetWrapper(
-                delay: StaggeredAnimationHelper.getDelay(2),
-                child: const FamilyHealthScoreWidget(),
-              ),
-              SizedBox(height: isMobile ? 16 : 24),
+              // Family Health Score Widget - REMOVED (move to analytics later)
+              // AnimatedWidgetWrapper(
+              //   delay: StaggeredAnimationHelper.getDelay(2),
+              //   child: const FamilyHealthScoreWidget(),
+              // ),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Family Members Overview (NEW!)
+              // Family Members Overview (NEW!) - KEEP
               AnimatedWidgetWrapper(
                 delay: StaggeredAnimationHelper.getDelay(3),
                 child: const FamilyMembersOverviewWidget(),
               ),
               SizedBox(height: isMobile ? 16 : 24),
 
-              // AI Health Insights (Phase 4)
-              const FamilyHealthInsightsWidget(),
-              SizedBox(height: isMobile ? 16 : 24),
+              // AI Health Insights - REMOVED (move to AI tab)
+              // const FamilyHealthInsightsWidget(),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Medication Reminders (Phase 4)
+              // Medication Reminders (Phase 4) - KEEP
               const MedicationRemindersWidget(),
               SizedBox(height: isMobile ? 16 : 24),
 
-              // Upcoming Appointments (Phase 4)
+              // Upcoming Appointments (Phase 4) - KEEP
               const UpcomingAppointmentsWidget(),
               SizedBox(height: isMobile ? 16 : 24),
 
-              // Chronic Diseases Summary (Phase 5)
-              const FamilyChronicDiseasesWidget(),
-              SizedBox(height: isMobile ? 16 : 24),
+              // Chronic Diseases Summary - REMOVED (move to health report)
+              // const FamilyChronicDiseasesWidget(),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Health Activity Timeline (Phase 5)
-              const FamilyHealthActivityWidget(),
-              SizedBox(height: isMobile ? 16 : 24),
+              // Health Activity Timeline - REMOVED (redundant with timeline)
+              // const FamilyHealthActivityWidget(),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Family Health Report (Phase 7)
-              AnimatedWidgetWrapper(
-                delay: StaggeredAnimationHelper.getDelay(8),
-                child: const FamilyHealthReportWidget(),
-              ),
-              SizedBox(height: isMobile ? 16 : 24),
+              // Family Health Report - REMOVED (too detailed for dashboard)
+              // AnimatedWidgetWrapper(
+              //   delay: StaggeredAnimationHelper.getDelay(8),
+              //   child: const FamilyHealthReportWidget(),
+              // ),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Health Metrics (BMI & BMR)
-              Consumer<AuthProvider>(
-                builder: (context, authProvider, child) {
-                  return _buildHealthMetrics(context, authProvider, languageProvider);
-                },
-              ),
-              SizedBox(height: isMobile ? 16 : 24),
+              // Health Metrics (BMI & BMR) - REMOVED (move to profile)
+              // Consumer<AuthProvider>(
+              //   builder: (context, authProvider, child) {
+              //     return _buildHealthMetrics(context, authProvider, languageProvider);
+              //   },
+              // ),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Quick actions
-              _buildQuickActions(context, isMobile, languageProvider),
-              SizedBox(height: isMobile ? 16 : 24),
+              // Quick actions - REMOVED (now permanent FAB)
+              // _buildQuickActions(context, isMobile, languageProvider),
+              // SizedBox(height: isMobile ? 16 : 24),
 
-              // Recent documents
+              // Recent documents - KEEP
               _buildRecentDocuments(context, healthRecordProvider, languageProvider),
               SizedBox(height: isMobile ? 16 : 24),
 
-              // Health tips
-              _buildHealthTips(context, languageProvider),
+              // Health tips - REMOVED (move to AI assistant)
+              // _buildHealthTips(context, languageProvider),
             ]),
           ),
         ),

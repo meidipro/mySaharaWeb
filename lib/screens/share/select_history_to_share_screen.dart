@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/medical_history.dart';
+import '../../models/family_member.dart';
 import '../../providers/medical_timeline_provider.dart';
+import '../../providers/family_provider.dart';
 import 'qr_code_display_screen.dart';
 
 class SelectHistoryToShareScreen extends StatefulWidget {
@@ -20,12 +22,14 @@ class _SelectHistoryToShareScreenState
     extends State<SelectHistoryToShareScreen> {
   final Set<String> _selectedHistoryIds = {};
   bool _isGenerating = false;
+  String? _selectedFamilyMemberId; // null means "Self"
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MedicalTimelineProvider>().loadTimelineEvents();
+      context.read<FamilyProvider>().loadFamilyMembers();
     });
   }
 
@@ -137,9 +141,21 @@ class _SelectHistoryToShareScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MedicalTimelineProvider>(
-      builder: (context, timelineProvider, child) {
-        final histories = timelineProvider.timelineEvents;
+    return Consumer2<MedicalTimelineProvider, FamilyProvider>(
+      builder: (context, timelineProvider, familyProvider, child) {
+        // Filter histories based on selected family member
+        final allHistories = timelineProvider.timelineEvents;
+        final histories = allHistories.where((h) {
+          if (_selectedFamilyMemberId == null) {
+            // Show only user's own history (familyMemberId is null)
+            return h.familyMemberId == null;
+          } else {
+            // Show selected family member's history
+            return h.familyMemberId == _selectedFamilyMemberId;
+          }
+        }).toList();
+
+        final familyMembers = familyProvider.familyMembers;
 
         return Scaffold(
           appBar: AppBar(
@@ -161,54 +177,57 @@ class _SelectHistoryToShareScreenState
                 ),
             ],
           ),
-          body: timelineProvider.isLoading
+          body: timelineProvider.isLoading || familyProvider.isLoading
               ? const Center(child: CircularProgressIndicator())
-              : histories.isEmpty
-                  ? _buildEmptyState()
-                  : Column(
-                      children: [
-                        // Selection counter
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          color: AppColors.primary.withOpacity(0.1),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                size: 20,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _selectedHistoryIds.isEmpty
-                                      ? 'Select medical histories to share'
-                                      : '${_selectedHistoryIds.length} ${_selectedHistoryIds.length == 1 ? 'history' : 'histories'} selected',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
+              : Column(
+                  children: [
+                    // Family Member Selector
+                    _buildFamilyMemberSelector(familyMembers),
+
+                    // Selection counter
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      color: AppColors.primary.withOpacity(0.1),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 20,
+                            color: AppColors.primary,
                           ),
-                        ),
-                        // List of medical histories
-                        Expanded(
-                          child: RefreshIndicator(
-                            onRefresh: () =>
-                                timelineProvider.loadTimelineEvents(),
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: histories.length,
-                              itemBuilder: (context, index) {
-                                final history = histories[index];
-                                final isSelected =
-                                    _selectedHistoryIds.contains(history.id);
-                                return _buildHistoryCard(history, isSelected);
-                              },
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _selectedHistoryIds.isEmpty
+                                  ? 'Select medical histories to share'
+                                  : '${_selectedHistoryIds.length} ${_selectedHistoryIds.length == 1 ? 'history' : 'histories'} selected',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // List of medical histories
+                    Expanded(
+                      child: histories.isEmpty
+                          ? _buildEmptyState()
+                          : RefreshIndicator(
+                              onRefresh: () =>
+                                  timelineProvider.loadTimelineEvents(),
+                              child: ListView.builder(
+                                padding: const EdgeInsets.all(16),
+                                itemCount: histories.length,
+                                itemBuilder: (context, index) {
+                                  final history = histories[index];
+                                  final isSelected =
+                                      _selectedHistoryIds.contains(history.id);
+                                  return _buildHistoryCard(history, isSelected);
+                                },
+                              ),
                           ),
                         ),
                       ],
@@ -406,6 +425,110 @@ class _SelectHistoryToShareScreenState
     );
   }
 
+  Widget _buildFamilyMemberSelector(List<FamilyMember> familyMembers) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Whose medical history do you want to share?',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+          ),
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // Self option
+                _buildMemberChip(
+                  label: 'My History',
+                  icon: Icons.person,
+                  isSelected: _selectedFamilyMemberId == null,
+                  onTap: () {
+                    setState(() {
+                      _selectedFamilyMemberId = null;
+                      _selectedHistoryIds.clear();
+                    });
+                  },
+                ),
+                const SizedBox(width: 8),
+                // Family members
+                ...familyMembers.map((member) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _buildMemberChip(
+                      label: member.fullName,
+                      icon: Icons.family_restroom,
+                      isSelected: _selectedFamilyMemberId == member.id,
+                      onTap: () {
+                        setState(() {
+                          _selectedFamilyMemberId = member.id;
+                          _selectedHistoryIds.clear();
+                        });
+                      },
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMemberChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.grey[200],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : Colors.grey[300]!,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.textPrimary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -423,7 +546,9 @@ class _SelectHistoryToShareScreenState
           ),
           const SizedBox(height: 8),
           Text(
-            'Add medical events to your timeline first',
+            _selectedFamilyMemberId == null
+                ? 'Add medical events to your timeline first'
+                : 'No medical history for this family member yet',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),

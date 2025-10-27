@@ -20,6 +20,7 @@ import '../health_records/add_health_record_screen.dart';
 import '../health_records/health_record_detail_screen.dart';
 import '../medication/add_medication_screen_simple.dart';
 import '../appointment/add_appointment_screen.dart';
+import '../ai_chat/ai_chat_screen.dart';
 
 class FamilyMemberDetailScreen extends StatefulWidget {
   final String memberId;
@@ -49,7 +50,7 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this); // UPDATED: 5 → 4 tabs
     _tabController.addListener(() {
       setState(() {}); // Rebuild to update FAB
     });
@@ -128,11 +129,10 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
           labelColor: AppColors.textWhite,
           unselectedLabelColor: AppColors.textWhite.withOpacity(0.7),
           tabs: const [
-            Tab(icon: Icon(Icons.dashboard), text: 'Overview'),
-            Tab(icon: Icon(Icons.timeline), text: 'History'),
-            Tab(icon: Icon(Icons.folder), text: 'Documents'),
-            Tab(icon: Icon(Icons.medication), text: 'Medications'),
-            Tab(icon: Icon(Icons.event), text: 'Appointments'),
+            Tab(icon: Icon(Icons.person), text: 'Overview'),
+            Tab(icon: Icon(Icons.favorite), text: 'Health'),
+            Tab(icon: Icon(Icons.calendar_today), text: 'Care'),
+            Tab(icon: Icon(Icons.psychology), text: 'AI'),
           ],
         ),
       ),
@@ -142,51 +142,174 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
               controller: _tabController,
               children: [
                 _buildOverviewTab(member, isLinked),
-                _buildHistoryTab(member),
-                _buildDocumentsTab(member),
-                _buildMedicationsTab(member),
-                _buildAppointmentsTab(member),
+                _buildHealthTab(member),        // NEW: Merged History + Documents
+                _buildCareTab(member),          // NEW: Merged Medications + Appointments
+                _buildAiInsightsTab(member),    // NEW: AI Insights
               ],
             ),
       floatingActionButton: member != null && _tabController.index > 0
           ? FloatingActionButton.extended(
               onPressed: () {
                 switch (_tabController.index) {
-                  case 1: // History
-                    _addMedicalHistory(member);
+                  case 1: // Health tab - show options
+                    _showHealthOptions(member);
                     break;
-                  case 2: // Documents
-                    _uploadDocument(member);
+                  case 2: // Care tab - show options
+                    _showCareOptions(member);
                     break;
-                  case 3: // Medications
-                    _addMedication(member);
-                    break;
-                  case 4: // Appointments
-                    _addAppointment(member);
+                  case 3: // AI tab - open AI chat
+                    Get.to(() => AiChatScreen());
                     break;
                 }
               },
               backgroundColor: AppColors.primary,
-              icon: const Icon(Icons.add),
+              icon: Icon(_getTabActionIcon()),
               label: Text(_getTabActionLabel()),
             )
           : null,
     );
   }
 
+  IconData _getTabActionIcon() {
+    switch (_tabController.index) {
+      case 1:
+        return Icons.add;
+      case 2:
+        return Icons.add;
+      case 3:
+        return Icons.chat;
+      default:
+        return Icons.add;
+    }
+  }
+
   String _getTabActionLabel() {
     switch (_tabController.index) {
       case 1:
-        return 'Add Event';
+        return 'Add Record';
       case 2:
-        return 'Upload Doc';
+        return 'Add Care';
       case 3:
-        return 'Add Medication';
-      case 4:
-        return 'Add Appointment';
+        return 'Ask AI';
       default:
         return 'Add';
     }
+  }
+
+  /// Show health options (Timeline or Document)
+  void _showHealthOptions(FamilyMember member) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Add Health Record',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.timeline, color: AppColors.primary),
+              ),
+              title: const Text('Add Medical Event'),
+              subtitle: const Text('Add diagnosis, consultation, or treatment'),
+              onTap: () {
+                Navigator.pop(context);
+                _addMedicalHistory(member);
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.upload_file, color: AppColors.success),
+              ),
+              title: const Text('Upload Document'),
+              subtitle: const Text('Add prescription, test report, or scan'),
+              onTap: () {
+                Navigator.pop(context);
+                _uploadDocument(member);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Show care options (Medication or Appointment)
+  void _showCareOptions(FamilyMember member) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Add Care Record',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.medication, color: AppColors.primary),
+              ),
+              title: const Text('Add Medication'),
+              subtitle: const Text('Add prescription or supplement'),
+              onTap: () {
+                Navigator.pop(context);
+                _addMedication(member);
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.event, color: AppColors.info),
+              ),
+              title: const Text('Add Appointment'),
+              subtitle: const Text('Schedule doctor visit or checkup'),
+              onTap: () {
+                Navigator.pop(context);
+                _addAppointment(member);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   // TAB 1: Overview
@@ -529,6 +652,133 @@ class _FamilyMemberDetailScreenState extends State<FamilyMemberDetailScreen>
       },
     );
   }
+
+  // ============================================================================
+  // NEW MERGED TABS (Day 4 - UX Improvement)
+  // ============================================================================
+
+  /// Health Tab - Combines History and Documents with sub-tabs
+  Widget _buildHealthTab(FamilyMember member) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Material(
+            color: Colors.white,
+            elevation: 1,
+            child: TabBar(
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textSecondary,
+              indicatorColor: AppColors.primary,
+              tabs: const [
+                Tab(icon: Icon(Icons.timeline), text: 'Timeline'),
+                Tab(icon: Icon(Icons.folder), text: 'Documents'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildHistoryTab(member),    // Existing method
+                _buildDocumentsTab(member),  // Existing method
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Care Tab - Combines Medications and Appointments with sub-tabs
+  Widget _buildCareTab(FamilyMember member) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Material(
+            color: Colors.white,
+            elevation: 1,
+            child: TabBar(
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textSecondary,
+              indicatorColor: AppColors.primary,
+              tabs: const [
+                Tab(icon: Icon(Icons.medication), text: 'Medications'),
+                Tab(icon: Icon(Icons.event), text: 'Appointments'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildMedicationsTab(member),   // Existing method
+                _buildAppointmentsTab(member),  // Existing method
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// AI Insights Tab - New feature for AI-powered health insights
+  Widget _buildAiInsightsTab(FamilyMember member) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.psychology,
+              size: 100,
+              color: AppColors.primary.withOpacity(0.3),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'AI Health Insights',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Get AI-powered health insights for ${member.fullName}',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Coming soon: Disease risk analysis, medication interactions, health trends, and personalized recommendations.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                Get.to(() => AiChatScreen());
+              },
+              icon: const Icon(Icons.chat),
+              label: Text('Ask AI About ${member.fullName}'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textWhite,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================================
+  // END NEW MERGED TABS
+  // ============================================================================
 
   Widget _buildQuickStats(FamilyMember member) {
     return Consumer2<MedicalTimelineProvider, HealthRecordProvider>(

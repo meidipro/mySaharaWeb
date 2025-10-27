@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../config/app_config.dart';
 
 /// Enhanced AI Health Companion Service
 /// Features:
@@ -11,8 +11,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// - Nutrition coaching
 /// - Preventive health alerts
 class AIService {
-  static final String _groqApiKey = dotenv.env['GROQ_API_KEY'] ?? '';
-  static const String _groqApiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+  // Backend API URL
+  static String get _backendUrl => AppConfig.backendUrl;
+  static String get _apiUrl => '$_backendUrl/api/ai/chat';
 
   // Conversation history for context
   static final List<Map<String, String>> _conversationHistory = [];
@@ -108,74 +109,32 @@ Disclaimer: While I provide helpful health information, I'm not a substitute for
     bool useHistory = true,
     Map<String, dynamic>? userContext,
   }) async {
-    if (_groqApiKey.isEmpty) {
-      return _detectLanguage(message) == 'bn'
-          ? 'AI সেবা কনফিগার করা হয়নি। দয়া করে .env ফাইলে GROQ_API_KEY যোগ করুন।'
-          : 'AI service is not configured. Please add GROQ_API_KEY to your .env file.';
-    }
-
     try {
-      print('Sending message to Groq API...');
-      print('API Key present: ${_groqApiKey.isNotEmpty}');
+      print('Sending message to backend API: $_apiUrl');
 
       // Detect language
       final language = _detectLanguage(message);
       print('Detected language: $language');
 
-      // Build messages array with context
-      final messages = <Map<String, String>>[];
-
-      // Add system prompt
-      String systemPrompt = _getEnhancedSystemPrompt(language);
-
-      // Add user context if provided
-      if (userContext != null) {
-        systemPrompt += '\n\nUser Context:\n';
-        if (userContext['age'] != null) {
-          systemPrompt += '- Age: ${userContext['age']}\n';
-        }
-        if (userContext['gender'] != null) {
-          systemPrompt += '- Gender: ${userContext['gender']}\n';
-        }
-        if (userContext['chronicDiseases'] != null &&
-            userContext['chronicDiseases'].isNotEmpty) {
-          systemPrompt +=
-              '- Chronic Conditions: ${userContext['chronicDiseases']}\n';
-        }
-        if (userContext['location'] != null) {
-          systemPrompt += '- Location: ${userContext['location']}\n';
-        }
-      }
-
-      messages.add({
-        'role': 'system',
-        'content': systemPrompt,
-      });
-
-      // Add conversation history for context
+      // Build conversation history for API
+      final conversationHistory = <Map<String, String>>[];
       if (useHistory && _conversationHistory.isNotEmpty) {
-        messages.addAll(_conversationHistory.take(10)); // Last 10 messages
+        conversationHistory.addAll(_conversationHistory.take(10)); // Last 10 messages
       }
-
-      // Add current message
-      messages.add({
-        'role': 'user',
-        'content': message,
-      });
 
       final requestBody = {
-        'model': 'llama-3.3-70b-versatile',
-        'messages': messages,
-        'temperature': 0.7,
-        'max_tokens': 800,
+        'message': message,
+        'language': language,
+        'conversation_history': conversationHistory,
+        'context': userContext ?? {},
+        'use_medical_mode': true,
       };
 
       print('Request body: ${jsonEncode(requestBody)}');
 
       final response = await http.post(
-        Uri.parse(_groqApiUrl),
+        Uri.parse(_apiUrl),
         headers: {
-          'Authorization': 'Bearer $_groqApiKey',
           'Content-Type': 'application/json',
         },
         body: jsonEncode(requestBody),
@@ -186,49 +145,48 @@ Disclaimer: While I provide helpful health information, I'm not a substitute for
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final content = data['choices'][0]['message']['content'];
 
-        // Save to conversation history
-        if (useHistory) {
-          _conversationHistory.add({
-            'role': 'user',
-            'content': message,
-          });
-          _conversationHistory.add({
-            'role': 'assistant',
-            'content': content.trim(),
-          });
+        if (data['success'] == true) {
+          final content = data['message'] as String;
 
-          // Keep only last 20 messages (10 exchanges)
-          if (_conversationHistory.length > 20) {
-            _conversationHistory.removeRange(0, _conversationHistory.length - 20);
+          // Save to conversation history
+          if (useHistory) {
+            _conversationHistory.add({
+              'role': 'user',
+              'content': message,
+            });
+            _conversationHistory.add({
+              'role': 'assistant',
+              'content': content.trim(),
+            });
+
+            // Keep only last 20 messages (10 exchanges)
+            if (_conversationHistory.length > 20) {
+              _conversationHistory.removeRange(0, _conversationHistory.length - 20);
+            }
           }
-        }
 
-        return content.trim();
+          return content.trim();
+        } else {
+          // Backend returned success: false
+          final errorMessage = data['error'] ?? 'Unknown error';
+          print('Error from backend: $errorMessage');
+          return _detectLanguage(message) == 'bn'
+              ? 'দুঃখিত, একটি সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।'
+              : 'Sorry, something went wrong. Please try again.';
+        }
       } else {
-        // Parse error details
-        try {
-          final errorData = jsonDecode(response.body);
-          final errorMessage = errorData['error']?['message'] ?? 'Unknown error';
-          print('API Error: $errorMessage');
-
-          if (response.statusCode == 400) {
-            return 'Invalid request to AI service. Please check your API key or try again.';
-          } else if (response.statusCode == 401) {
-            return 'Invalid API key. Please check GROQ_API_KEY in .env file.';
-          } else if (response.statusCode == 429) {
-            return 'Rate limit exceeded. Please wait a moment and try again.';
-          } else {
-            return 'AI service error: $errorMessage';
-          }
-        } catch (e) {
-          return 'Failed to get AI response (${response.statusCode}). ${response.body}';
-        }
+        print('HTTP Error: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return _detectLanguage(message) == 'bn'
+            ? 'দুঃখিত, সার্ভারের সাথে সংযোগ করা যায়নি। দয়া করে আবার চেষ্টা করুন।'
+            : 'Sorry, could not connect to server. Please try again.';
       }
     } catch (e) {
       print('Error in AI chat: $e');
-      return 'Sorry, I encountered an error: ${e.toString()}';
+      return _detectLanguage(message) == 'bn'
+          ? 'দুঃখিত, একটি সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।\n\nত্রুটি: $e'
+          : 'Sorry, something went wrong. Please try again.\n\nError: $e';
     }
   }
 

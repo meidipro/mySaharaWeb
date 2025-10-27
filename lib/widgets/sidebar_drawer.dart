@@ -3,13 +3,34 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../screens/settings/settings_screen.dart';
-import '../screens/medication/medication_management_screen.dart';
-import '../screens/appointment/appointment_management_screen.dart';
 import '../providers/auth_provider.dart';
 import '../providers/language_provider.dart';
 
 class SidebarDrawer extends StatelessWidget {
   const SidebarDrawer({super.key});
+
+  /// Show about dialog
+  void _showAboutDialog(BuildContext context) {
+    showAboutDialog(
+      context: context,
+      applicationName: 'My Sahara',
+      applicationVersion: '1.1.0',
+      applicationLegalese: '© 2024 My Sahara\nFor You & Your Family',
+      applicationIcon: Icon(
+        Icons.favorite,
+        size: 48,
+        color: AppColors.primary,
+      ),
+      children: [
+        const SizedBox(height: 16),
+        const Text(
+          'My Sahara helps you manage your family\'s health in one place. '
+          'Track medical records, appointments, medications, and get AI-powered health insights.',
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
 
   /// Show logout confirmation dialog
   void _showLogoutConfirmation(BuildContext context, AuthProvider authProvider, LanguageProvider languageProvider) {
@@ -121,32 +142,22 @@ class SidebarDrawer extends StatelessWidget {
               padding: EdgeInsets.zero,
               children: [
                 _DrawerItem(
-                  icon: Icons.medication,
-                  title: 'Family Medication Tracking',
-                  subtitle: 'Track medications for everyone',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Get.to(() => const MedicationManagementScreen());
-                  },
-                ),
-                const Divider(),
-                _DrawerItem(
-                  icon: Icons.calendar_month,
-                  title: 'Family Appointments',
-                  subtitle: 'Manage appointments for all members',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Get.to(() => const AppointmentManagementScreen());
-                  },
-                ),
-                const Divider(),
-                _DrawerItem(
                   icon: Icons.settings,
                   title: languageProvider.tr('settings'),
                   subtitle: languageProvider.tr('profile_preferences'),
                   onTap: () {
                     Navigator.pop(context);
                     Get.to(() => const SettingsScreen());
+                  },
+                ),
+                const Divider(),
+                _DrawerItem(
+                  icon: Icons.info_outline,
+                  title: 'About',
+                  subtitle: 'App version & info',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAboutDialog(context);
                   },
                 ),
                 const Divider(),

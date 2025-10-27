@@ -9,6 +9,7 @@ class UserModel {
   final String? profileImageUrl;
   final double? height; // in cm
   final double? weight; // in kg
+  final String? chronicDiseases; // comma-separated chronic diseases
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -23,6 +24,7 @@ class UserModel {
     this.profileImageUrl,
     this.height,
     this.weight,
+    this.chronicDiseases,
     required this.createdAt,
     this.updatedAt,
   });
@@ -39,6 +41,7 @@ class UserModel {
       profileImageUrl: json['profile_image_url'] as String?,
       height: json['height'] != null ? (json['height'] as num).toDouble() : null,
       weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
+      chronicDiseases: json['chronic_diseases'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
@@ -58,6 +61,7 @@ class UserModel {
       'profile_image_url': profileImageUrl,
       'height': height,
       'weight': weight,
+      'chronic_diseases': chronicDiseases,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
